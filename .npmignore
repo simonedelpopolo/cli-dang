@@ -1,0 +1,8 @@
+.git
+.gitignore
+.idea
+.eslintrc.json
+.eslintignore
+tests
+.github
+coverage

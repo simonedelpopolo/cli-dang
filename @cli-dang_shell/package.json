@@ -1,0 +1,36 @@
+{
+  "name": "@cli-dang/shell",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "description": "Command Line Interface design framework. ESModule",
+  "type": "module",
+  "main": "index.js",
+  "bin": {"dang": "./dang.js"},
+  "dependencies": {
+    "oftypes": "^2.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "cli",
+    "framework",
+    "flags",
+    "commands",
+    "multi process"
+  ],
+  "author": {
+    "name": "Simone Del Popolo",
+    "email": "simonedelpopolo@outlook.com",
+    "url": "https://github.com/simonedelpopolo"
+  },
+  "homepage": "https://github.com/simonedelpopolo/cli-dang#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simonedelpopolo/cli-dang.git"
+  },
+  "bugs": {
+    "email": "simonedelpopolo@outlook.com",
+    "url": "https://github.com/simonedelpopolo/cli-dang/issues"
+  }
+}
