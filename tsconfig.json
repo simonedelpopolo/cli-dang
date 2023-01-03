@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "target": "ESNext",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "inlineSourceMap": true,
+    "moduleResolution": "Node",
+    "rootDir": "./src",
+    "outDir": "./types",
+    "resolveJsonModule": true,
+  },
+  "exclude": [
+    "./node_modules/**/*",
+    "./tests/**/*",
+    "./src/tests/**/*",
+    "./@cli-dang_activity/index.d.ts",
+    "./@cli-dang_boolean/index.d.ts",
+    "./@cli-dang_decors/index.d.ts",
+    "./@cli-dang_object/index.d.ts",
+    "./@cli-dang_error/index.d.ts",
+    "./@cli-dang_input/index.d.ts",
+    "./@cli-dang_json/index.d.ts",
+    "./@cli-dang_shell/index.d.ts",
+    "./src/@cli-dang_activity/index.ts",
+    "./src/@cli-dang_boolean/index.ts",
+    "./src/@cli-dang_decors/index.ts",
+    "./src/@cli-dang_object/index.ts",
+    "./src/@cli-dang_error/index.ts",
+    "./src/@cli-dang_input/index.ts",
+    "./src/@cli-dang_json/index.ts",
+    "./src/@cli-dang_shell/index.ts",
+    "./coverage/**/*",
+    "./types/**/*"
+  ]
+}

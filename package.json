@@ -1,0 +1,68 @@
+{
+  "name": "cli-dang",
+  "version": "2.0.0",
+  "license": "Apache-2.0",
+  "description": "Command Line Interface design framework. ESModule",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": "> 12"
+  },
+  "workspaces": [
+    "@cli-dang_activity",
+    "@cli-dang_boolean",
+    "@cli-dang_decors",
+    "@cli-dang_object",
+    "@cli-dang_error",
+    "@cli-dang_input",
+    "@cli-dang_json"
+  ],
+  "scripts": {
+    "babel-watch": "npx babel --extensions \".ts\" --out-dir ./ src --watch",
+    "build": "npx babel --extensions \".ts\" --out-dir ./ src && tsc && eslint . --fix --ext .ts --ext .js",
+    "c8": "npx 4t --c8='skip-full:|clean:|src:./src' unit",
+    "lint": "npx eslint . --ext .ts --ext .js",
+    "lint-fix": "npx eslint . --fix --ext .ts --ext .js",
+    "lint-watch": "npx esw --watch --fix --watch-delay=2",
+    "test": "npx 4t unit",
+    "tsc-watch": "npx tsc --watch"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.19.3",
+    "@babel/eslint-parser": "^7.19.1",
+    "@babel/node": "^7.20.5",
+    "@babel/plugin-syntax-import-assertions": "^7.20.0",
+    "@babel/preset-typescript": "^7.18.6",
+    "@types/node": "^18.11.17",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "eslint": "^8.30.0",
+    "eslint-import-resolver-typescript": "^3.5.2",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-sort-imports-es6-autofix": "^0.6.0",
+    "eslint-watch": "^8.0.0",
+    "trythistrythat": "2.0.7",
+    "typescript": "^4.9.4"
+  },
+  "keywords": [
+    "cli",
+    "framework",
+    "flags",
+    "commands",
+    "multi process"
+  ],
+  "author": {
+    "name": "Simone Del Popolo",
+    "email": "simonedelpopolo@outlook.com",
+    "url": "https://github.com/simonedelpopolo"
+  },
+  "homepage": "https://github.com/simonedelpopolo/cli-dang#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simonedelpopolo/cli-dang.git"
+  },
+  "bugs": {
+    "email": "simonedelpopolo@outlook.com",
+    "url": "https://github.com/simonedelpopolo/cli-dang/issues"
+  }
+}
