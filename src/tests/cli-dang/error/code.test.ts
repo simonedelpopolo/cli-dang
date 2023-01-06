@@ -1,13 +1,13 @@
 import * as tttt from 'trythistrythat'
 import { add, error_code, get } from '@cli-dang/error'
-import { ErrorsObject } from '../../../@cli-dang_error/lib/error/types'
+import { ErrorsObject } from '../../../@cli-dang/error/lib/error/types'
 import { trace, trace_options } from '@cli-dang/activity'
 
 export default async ( id ) => {
 
   let success = true
   let message:string|undefined|ErrorsObject|number = undefined
-  const UnitName = '@cli-dang_error.get() test'
+  const UnitName = 'error.get() test'
 
   const result:Error = await tttt.deepStrictEqual( async () => {
 
@@ -40,7 +40,7 @@ export async function get_key ( id ){
 
   let success = true
   let message:string|undefined|ErrorsObject|number = undefined
-  const UnitName = '@cli-dang_error.get(key) test'
+  const UnitName = 'error.get(key) test'
 
   const result:Error = await tttt.deepStrictEqual( async () => {
 
@@ -65,7 +65,7 @@ export async function add_key ( id ){
 
   let success = true
   let message:string|undefined|ErrorsObject|number = undefined
-  const UnitName = '@cli-dang_error.add(key) test'
+  const UnitName = 'error.add(key) test'
 
   const result:Error = await tttt.deepStrictEqual( async () => {
 
@@ -96,7 +96,7 @@ export async function get_key_return_0 ( id ){
 
   let success = true
   let message:string|undefined|ErrorsObject|number = undefined
-  const UnitName = '@cli-dang_error.get(key) return 0 test'
+  const UnitName = 'error.get(key) return 0 test'
 
   const result:Error = await tttt.deepStrictEqual( async () => {
 

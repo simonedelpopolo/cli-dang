@@ -6,7 +6,6 @@ tests
 .eslintrc.json
 .eslintignore
 coverage
-.nycrc
 .gitignore
 .babelrc
 tsconfig.json

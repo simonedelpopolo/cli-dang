@@ -1,5 +1,5 @@
 import * as tttt from 'trythistrythat'
-import match from '../../../../@cli-dang_input/lib/input/functions/match'
+import match from '../../../../@cli-dang/input/lib/input/functions/match'
 import { OftypesError } from 'oftypes'
 
 export default async ( id ) => {

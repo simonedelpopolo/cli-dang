@@ -1,6 +1,6 @@
 import * as assert from 'node:assert/strict'
 import * as tttt from 'trythistrythat'
-import { resolvers } from 'trythistrythat'
+import { AssertionError } from 'assert'
 import { stderr } from '@cli-dang/activity'
 
 export default async ( id ) => {
@@ -66,9 +66,9 @@ export async function stderr_resolves_message( id ){
 
   const message = await stderr( 'message is resolved always', true )
 
-  const result:undefined|Error = await tttt.deepStrictEqual( async () => {
+  const result:boolean|AssertionError = await tttt.deepStrictEqual( async () => {
 
-    return resolvers( message, 'message is resolved always' )
+    return tttt.resolvers( message, 'message is resolved always' )
   } )
 
   if( result instanceof Error ){
