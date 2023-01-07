@@ -1,6 +1,5 @@
-import Command from '../../../input/lib/input/command'
+import { Command, ParsedArgv } from '@cli-dang/input'
 import { init } from '../shell/init/init'
-import { ParsedArgv } from '@cli-dang/input'
 
 export async function dang_process( parsed:ParsedArgv ):Promise<void>{
 
