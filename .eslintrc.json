@@ -41,6 +41,7 @@
     }
   },
   "rules": {
+    "node/no-unpublished-import": "off",
     "no-process-exit": "off",
     "node/shebang": "off",
     "@typescript-eslint/ban-ts-comment": "off",
