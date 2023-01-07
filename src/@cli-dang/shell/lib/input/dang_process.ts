@@ -1,102 +1,44 @@
-import { bare_flag } from './dang/flag/bare_flag'
-import { Dang } from '@cli-dang/decors'
-import { error_code } from '@cli-dang/error'
-import { exit } from '@cli-dang/activity'
-import { OftypesError, resolvers, undefined_ } from 'oftypes'
+import Command from '../../../input/lib/input/command'
+import { init } from '../shell/init/init'
+import { ParsedArgv } from '@cli-dang/input'
 
-export async function blaze_process( parsed ) {
+export async function dang_process( parsed:ParsedArgv ):Promise<void>{
 
-  let break_for_loop = false
-
-  const dang = {
-    command:{
-      init: null,
-      help: null
-    },
-    flag:{
-      bare: null
-    }
+  const init_bare = <cb> ( data:cb ):void => {
+    init( data )
   }
 
-  const blaze_commandKeys = Object.keys( dang.command )
-  for ( const selected_command in blaze_commandKeys ) {
-
-    if ( !( parsed.keys.includes( blaze_commandKeys[ selected_command ] ) ) )
-      delete dang.command[ blaze_commandKeys[ selected_command ] ]
+  const void_clear_cb =<cb> ( data:cb ):cb => {
+    return <cb> JSON.stringify( data )
   }
 
-  for ( const command in parsed.keys ) {
+  const dang_commands = Command
+  dang_commands.define( 'init', init_bare )
+  dang_commands.flag( 'bare' )
+    .long( '--bare' )
+    .void( true )
+    .check( true )
 
-    if ( break_for_loop )
-      break
+  dang_commands.flag( 'void' )
+    .long( '--void' )
+    .void( false )
+    .type( 'boolean' )
+    .check( true )
 
-    switch ( parsed.keys[ command ] ) {
+  dang_commands.define( 'clean', init_bare )
+  dang_commands.flag( 'bare' )
+    .long( '--bare' )
+    .void( true )
+    .check( true )
 
-      case 'init': {
+  dang_commands.flag( 'void' )
+    .long( '--void' )
+    .void( false )
+    .type( 'opts' )
+    .check( true )
+    .cb( void_clear_cb )
 
-        const truthy = () => {
-          delete parsed.object.init
-          parsed.keys.splice( 0, 1 )
-        }
-        const falsy = async () => exit( 'init command doesn\'t accept any argument', new SyntaxError( '♠︎' ), error_code.COMMAND )
-        // @ts-ignore
-        await ( await undefined_( parsed.object.init, await resolvers( truthy, falsy ) ) )()
-
-        dang.command.init = true
-      }
-        break_for_loop = true
-        break
-
-      case 'v':
-      case 'version':
-
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line import/no-unresolved,node/no-missing-import
-        console.log( await ( await import( '../../package.json', { assert: { type: 'json' } } ) ).default.version )
-        // eslint-disable-next-line no-process-exit
-        process.exit( 0 )
-        break
-
-      default: {
-
-        const error = `        command '${ Dang.red( parsed.keys[ command ] ) }' not recognize
-        run -> ${ Dang.blue( process.title ) } help        `
-
-        await exit( error, new SyntaxError( `${ process.title } ♠︎` ), error_code.COMMAND )
-      }
-    }
-  }
-
-  const blazeFlags = Object.keys( parsed.object )
-
-  for ( const flag in blazeFlags ) {
-
-    switch ( blazeFlags[ flag ] ) {
-
-      case 'bare': {
-
-        for await ( const type of await bare_flag( parsed.object[ blazeFlags[ flag ] ] ) ) {
-          if ( type instanceof Error )
-            await exit( type.message, new OftypesError( '♠︎' ), error_code.FLAG )
-
-          dang.flag.bare = type
-        }
+  await dang_commands.interceptor( parsed )
 
 
-        delete parsed.object[ blazeFlags[ flag ] ]
-        parsed.keys.splice( 0, 1 )
-      }
-        break
-
-      default: {
-        const error = `        flag '${ Dang.red( blazeFlags[ flag ] ) }' not recognize
-        run -> ${ Dang.blue( process.title ) } help        `
-
-        await exit( error, new SyntaxError( `${ process.title } ♠︎` ), error_code.FLAG )
-      }
-    }
-  }
-
-  return dang
 }
