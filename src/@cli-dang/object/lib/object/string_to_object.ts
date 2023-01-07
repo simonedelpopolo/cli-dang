@@ -37,8 +37,11 @@ export async function string_to_object( data: string | Buffer, scalpel:string|Bu
       const property_value = []
       for ( const key in body_array ) {
 
-        if ( even + parseInt( key ) % 2 === 0 )
-          property_value.push( Array.of( body_array[ parseInt( key ) ], body_array[ parseInt( key ) + 1 ] ) )
+        if ( even + parseInt( key ) % 2 === 0 ) {
+          let value_ = <string> body_array[ parseInt( key ) + 1 ]
+          value_ = value_.length === 0 ? undefined : value_
+          property_value.push( Array.of( body_array[ parseInt( key ) ], value_ ) )
+        }
       }
 
       resolve( Object.fromEntries( property_value ) )
