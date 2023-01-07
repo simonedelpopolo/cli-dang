@@ -1,10 +1,13 @@
 import { LogicParameter } from './types'
-import { OftypesError } from 'oftypes'
-import { process_title } from './process_title'
+import { ParsedArgv } from '@cli-dang/input'
 import { processor } from './processor'
 
-export async function entry_point( argv:string[], logic:LogicParameter ):Promise<object|OftypesError>{
+export async function entry_point( argv:string[], logic:LogicParameter ):Promise<void>{
 
-  return Promise.resolve( process_title( await processor( argv ).catch( error => error ), logic ).catch( error => error ) )
+  const parsedArgv:ParsedArgv = await processor( argv ).catch( error => error )
+  if( parsedArgv instanceof Error )
+    return Promise.reject( parsedArgv )
+
+  await logic( parsedArgv )
 }
 
