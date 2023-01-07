@@ -28,7 +28,7 @@
     "lint-watch": "npx esw --watch --fix --watch-delay=2",
     "tsc-watch": "npx tsc --watch",
     "test": "npx 4t unit",
-    "t8": "npx t8 --c8='src:./src|html:|no-questions:|no-print:|skip-full:' unit"
+    "t8": "npx t8 --c8='src:./src|html:|no-questions:|no-print:|all:' unit"
   },
   "devDependencies": {
     "@babel/cli": "^7.20.7",
