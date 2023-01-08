@@ -45,10 +45,12 @@ export async function processor( argv:string[] ):Promise<ParsedArgv|OftypesError
 
     const argv_to_object = Object.fromEntries( process_arguments )
 
-    for ( const key in argv_to_object ) {
-      if( key.search( '-' ) > 0 ) {
-        argv_to_object[ key.replaceAll( '-', '_' ) ] = argv_to_object[ key ]
-        delete argv_to_object[ key ]
+    // @todo add option to function.
+    const replace_with_underscore = false
+    if( replace_with_underscore ) {
+      for ( const key in argv_to_object ) {
+        if ( key.search( '-' ) > 0 )
+          argv_to_object[ key.replaceAll( '-', '_' ) ] = argv_to_object[ key ]
       }
     }
 
