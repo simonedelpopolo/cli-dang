@@ -13,7 +13,7 @@ export declare type CommandsDefinition = { [name:string]: {
                              cb?: <cb>( args?: cb )=> Promise<cb>|Promise<void> | void
                            } | null
            } | null,
-    cb?:<cb>( args?: cb )=> Promise<cb>|Promise<void> | void
+    cb:<cb>( args?: cb )=> Promise<cb>|Promise<void> | void
   } }
 export declare interface Commands {
   _name: string|undefined
@@ -21,7 +21,7 @@ export declare interface Commands {
 
   retrieve: ( name?:string|undefined ) => CommandsDefinition|undefined
   interceptor: ( parsed: ParsedArgv ) => Promise<void>
-  define: ( name:string, cb?:<cb>( args?:cb )=>Promise<cb>|Promise<void> | void ) => void
+  define: ( name:string, cb:<cb>( args?:cb )=>Promise<cb>|Promise<void> | void ) => void
   flag: ( name:string ) => Commands
   short: ( name:string ) => Commands
   long: ( name:string ) => Commands

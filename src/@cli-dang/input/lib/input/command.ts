@@ -41,9 +41,12 @@ Object.defineProperty( Command, 'interceptor', {
   writable: false,
   value : async ( parsed: ParsedArgv  ):Promise<void> => {
 
+    let executed: null | string = null
     for ( const key of parsed.keys ){
 
       if( Object.keys( commands ).includes( key ) ) {
+
+        executed = key
 
         parsed.keys.splice( parsed.keys.indexOf( key ),  1 )
 
@@ -67,14 +70,13 @@ Object.defineProperty( Command, 'interceptor', {
           }
         }
         delete parsed.keys
-
-        if( await async_( commands[ key ].cb ) )
-          await commands[ key ].cb( parsed )
-        else
-          commands[ key ].cb( parsed )
       }
 
     }
+    if( await async_( commands[ executed ].cb ) )
+      await commands[ executed ].cb( parsed )
+    else
+      commands[ executed ].cb( parsed )
   }
 } )
 
@@ -82,7 +84,7 @@ Object.defineProperty( Command, 'define', {
   enumerable: true,
   configurable: false,
   writable: false,
-  value : ( name: string, cb?:<cb>( args?: cb )=> Promise<cb>|Promise<void> | void ) => {
+  value : ( name: string, cb:<cb>( args?: cb )=> Promise<cb>|Promise<void> | void ) => {
 
     Command._name = name
     if( ! commands[ Command._name ] )
