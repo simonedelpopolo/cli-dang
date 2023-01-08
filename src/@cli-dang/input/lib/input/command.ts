@@ -1,6 +1,7 @@
 import check_flag from './check/flag'
-import { async_ } from 'oftypes'
-import { Commands, CommandsDefinition, ParsedArgv } from './types'
+import { async_, resolvers, undefined_ } from 'oftypes'
+import { CommandCallBack, Commands, CommandsDefinition, FLAG, ParsedArgv } from './types'
+import { Dang } from '@cli-dang/decors'
 import { error_code } from '@cli-dang/error'
 import { exit } from '@cli-dang/activity'
 
@@ -14,19 +15,12 @@ Object.defineProperty( Command, '_name', {
   value : undefined
 } )
 
-Object.defineProperty( Command, '_flag', {
-  enumerable: false,
-  configurable: false,
-  writable: true,
-  value : undefined
-} )
-
 Object.defineProperty( Command, 'retrieve', {
   enumerable: true,
   configurable: false,
   writable: false,
-  value : ( name?: string|undefined ):CommandsDefinition|undefined => {
-    // @ts-ignore
+  value : ( name?: string|undefined ): { flags?: { [ p: string ]: FLAG } | null; cb: CommandCallBack } | CommandsDefinition => {
+
     return typeof name !== 'undefined'
       ? typeof commands[ name ] !== 'undefined'
         ? commands [ name ]
@@ -54,25 +48,30 @@ Object.defineProperty( Command, 'interceptor', {
 
         for ( const flag of Object.keys( parsed.object ) ){
 
-          if( commands[ key ].flags[ flag ].check ){
+          if( Object.keys( commands[ key ].flags ).includes( flag ) ){
+            if( commands[ key ].flags[ flag ].check ){
 
-            for await ( const type_check of check_flag(
-              parsed.object[ flag ],
-              flag,
-              commands[ key ].flags[ flag ].void,
-              commands[ key ].flags[ flag ].type,
-              commands[ key ].flags[ flag ].cb
-            ) ) {
-              if ( type_check instanceof Error )
-                await exit( type_check.message, undefined, error_code.FLAG )
-              parsed.object[ flag ] = type_check
+              for await ( const type_check of check_flag(
+                parsed.object[ flag ],
+                flag,
+                commands[ key ].flags[ flag ].void,
+                commands[ key ].flags[ flag ].type,
+                commands[ key ].flags[ flag ].cb
+              ) ) {
+                if ( type_check instanceof Error )
+                  await exit( type_check.message, undefined, error_code.FLAG )
+                parsed.object[ flag ] = type_check
+              }
             }
-          }
+          }else
+            await exit( `♠ flag ${Dang.red( flag )} not found`, undefined, error_code.FLAG )
+
         }
-        delete parsed.keys
-      }
+      }else
+        await exit( `♠ command ${Dang.red( key )} not found`, undefined, error_code.COMMAND )
 
     }
+    delete parsed.keys
     if( await async_( commands[ executed ].cb ) )
       await commands[ executed ].cb( parsed )
     else
@@ -84,7 +83,7 @@ Object.defineProperty( Command, 'define', {
   enumerable: true,
   configurable: false,
   writable: false,
-  value : ( name: string, cb:<cb>( args?: cb )=> Promise<cb>|Promise<void> | void ) => {
+  value : ( name: string, cb:CommandCallBack ) => {
 
     Command._name = name
     if( ! commands[ Command._name ] )
@@ -97,108 +96,37 @@ Object.defineProperty( Command, 'flag', {
   enumerable: true,
   configurable: false,
   writable: false,
-  value : ( name: string ):Commands => {
-    Command._flag = name
-    commands[ Command._name ].flags[ name ] = {
-      long: null,
-      short: null,
-      description: null,
-      usage: null,
-      void: null,
-      type: null,
-      check: null,
-      cb: null
+  value : async ( name: string, descriptor: FLAG, alias: string[]|undefined = undefined ):Promise<void> => {
+
+    const truthy = () => {
+      commands[ Command._name ].flags[ name ] = {
+        long: descriptor.long || null,
+        short: descriptor.short || null,
+        description: descriptor.description || null,
+        usage: descriptor.usage || null,
+        void: descriptor.void || false,
+        type: descriptor.type || 'string',
+        check: descriptor.check || false,
+        cb: descriptor.cb || null
+      }
     }
+    const falsy = () => {
 
-    return Command
-  }
-} )
-
-Object.defineProperty( Command, 'short', {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value : ( name: string ):Commands => {
-    commands[ Command._name ].flags[ Command._flag ].short = `-${name}`
-
-    return Command
-  }
-} )
-
-Object.defineProperty( Command, 'long', {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value : ( name: string ):Commands => {
-    commands[ Command._name ].flags[ Command._flag ].long = `--${name}`
-
-    return Command
-  }
-} )
-
-Object.defineProperty( Command, 'description', {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value : ( text: string ):Commands => {
-    commands[ Command._name ].flags[ Command._flag ].description = text
-
-    return Command
-  }
-} )
-
-Object.defineProperty( Command, 'usage', {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value : ( text: string ):Commands => {
-    commands[ Command._name ].flags[ Command._flag ].usage = text
-
-    return Command
-  }
-} )
-
-Object.defineProperty( Command, 'void', {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value : ( bool: boolean ):Commands => {
-    commands[ Command._name ].flags[ Command._flag ].void = bool
-
-    return Command
-  }
-} )
-
-Object.defineProperty( Command, 'type', {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value : ( string: string ):Commands => {
-    commands[ Command._name ].flags[ Command._flag ].type = string
-
-    return Command
-  }
-} )
-
-Object.defineProperty( Command, 'check', {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value : ( bool: boolean ):Commands => {
-    commands[ Command._name ].flags[ Command._flag ].check = bool
-
-    return Command
-  }
-} )
-
-Object.defineProperty( Command, 'cb', {
-  enumerable: true,
-  configurable: false,
-  writable: false,
-  value : ( cb: <cb>( args?: cb )=> Promise<cb>|Promise<void> | void ):Commands => {
-    commands[ Command._name ].flags[ Command._flag ].cb = cb
-
-    return Command
+      for ( const alias_flag of alias ){
+        commands[ Command._name ].flags[ alias_flag ] = {
+          long: descriptor.long || null,
+          short: descriptor.short || null,
+          description: descriptor.description || null,
+          usage: descriptor.usage || null,
+          void: descriptor.void || false,
+          type: descriptor.type || 'string',
+          check: descriptor.check || false,
+          cb: descriptor.cb || null
+        }
+      }
+    }
+    const flag_implementation:()=>void = <()=>void>await undefined_( alias, await resolvers( truthy, falsy ) )
+    flag_implementation()
   }
 } )
 

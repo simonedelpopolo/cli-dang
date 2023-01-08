@@ -37,9 +37,10 @@ export default async function* check_flag<CheckFlag> ( data:CheckFlag, name:stri
   yield data_type_check
 
   if( cb !== null ) {
-    yield await async_( cb )
-      ? await cb( data_type_check )
-      : cb( data_type_check )
+
+    yield await async_( cb.function )
+      ? await cb.function( data_type_check, ...( cb.arguments || [] ) )
+      : cb.function( data_type_check, ...( cb.arguments || [] ) )
   }
 
 }
