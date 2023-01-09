@@ -63,6 +63,7 @@ Object.defineProperty( Command, 'interceptor', {
                 parsed.object[ flag ] = type_check
               }
             }
+            parsed.keys.splice( parsed.keys.indexOf( flag ),  1 )
           }else
             await exit( `♠ flag ${Dang.red( flag )} not found`, undefined, error_code.FLAG )
 
@@ -71,7 +72,7 @@ Object.defineProperty( Command, 'interceptor', {
         await exit( `♠ command ${Dang.red( key )} not found`, undefined, error_code.COMMAND )
 
     }
-    delete parsed.keys
+
     if( await async_( commands[ executed ].cb ) )
       await commands[ executed ].cb( parsed )
     else
