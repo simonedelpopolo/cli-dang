@@ -1,2 +1,4 @@
 process.exit.test.js
 process.trace.test.js
+intercept.process.js
+intercept.help.process.js
