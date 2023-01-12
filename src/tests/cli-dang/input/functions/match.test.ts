@@ -8,7 +8,7 @@ export default async ( id ) => {
   const UNITName = '@cli-dang/input.options.function.match rejects \nfrom @cli-dang/object.string_object()'
   let actual: undefined|OftypesError = undefined
 
-  const result:null|Error = await tttt.deepStrictEqual( async() => {
+  const result:boolean|Error = await tttt.deepStrictEqual( async() => {
 
     actual = await match( 'file' ).catch( error => error )
     const expected = true

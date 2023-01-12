@@ -8,14 +8,14 @@ export default async ( id ) => {
   let message:undefined|string = undefined
   const UNITName = '@cli-dang/input.processor'
 
-  const result:null|Error = await tttt.deepStrictEqual( async() => {
+  const result:boolean|Error = await tttt.deepStrictEqual( async() => {
 
     const actual = await processor( [ 'code', '--file-test=string.txt', '--json={"string":"failed"}' ] ).catch( error => error.message )
     const expected = { object: {
       code: undefined,
-      file_test: 'string.txt',
-      json: '{"string":"failed"}'
-    }, keys: [ 'code', 'json', 'file_test' ] }
+      '--file-test': 'string.txt',
+      '--json': '{"string":"failed"}'
+    }, keys: [ 'code', '--file-test', '--json' ] }
 
     return tttt.resolvers( actual, expected )
   } )
@@ -150,6 +150,28 @@ export async function rejects_argv_number( id ){
     tttt.failed( UNITName )
     success = false
     message = AssertionError.message
+  }
+
+  tttt.end( id, success, UNITName, message )
+}
+
+export async function argv_with_options_syntax( id ){
+
+  let success = true
+  let message:undefined|string = undefined
+  const UNITName = '@cli-dang/input.processor argv with options syntax'
+
+  const result:boolean|Error = await tttt.deepStrictEqual( async () => {
+
+    const actual:ParsedArgv = await processor( [ 'bim', '--table=gin:drink-it' ] ).catch( error => error )
+    const expected = { object:{ '--table':{ gin:'drink-it' }, bim: undefined }, keys:[ 'bim', '--table' ] }
+
+    return tttt.resolvers( actual, expected )
+  } )
+
+  if( result instanceof Error ){
+    success = false
+    message = result.message
   }
 
   tttt.end( id, success, UNITName, message )

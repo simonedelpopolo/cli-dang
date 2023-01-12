@@ -1,6 +1,6 @@
 import * as tttt from 'trythistrythat'
 import { AssertionError } from 'assert'
-import { entry_point, LogicParameter, ParsedArgv } from '@cli-dang/input'
+import { entry_point } from '@cli-dang/input'
 import { OftypesError } from 'oftypes'
 
 export default async ( id ) => {
@@ -32,12 +32,11 @@ export async function entry_point_no_rejects ( id ){
   let success = true
   let message:undefined|string
   const UNITName = '@cli-dang/input.entry_point does NOT rejects'
-  let actual: void|OftypesError = undefined
 
   const result:boolean|AssertionError = await tttt.deepStrictEqual( async() => {
     const asyncFunction:LogicParameter = async( _argv: ParsedArgv ) => {/*void function*/}
 
-    actual = await entry_point( [ 'hello' ], asyncFunction )
+    const actual = await entry_point( [ 'hello' ], asyncFunction )
     const expected = undefined
 
     return tttt.resolvers( actual, expected )
