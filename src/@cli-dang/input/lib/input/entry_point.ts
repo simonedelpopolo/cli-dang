@@ -1,5 +1,3 @@
-import { LogicParameter } from './types'
-import { ParsedArgv } from '@cli-dang/input'
 import { processor } from './processor'
 
 export async function entry_point( argv:string[], logic:LogicParameter ):Promise<void>{
