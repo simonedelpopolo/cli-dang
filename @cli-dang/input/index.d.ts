@@ -1,5 +1,5 @@
 export function entry_point( argv: string[], logic: LogicParameter ): Promise<void>;
-export function options( pattern: string, reference_to_flag: string, no_async:boolean ): Promise<Error | OptionsType> | Error | OptionsType;
+export function options( pattern: string, reference_to_flag: string ): Promise<Error | OptionsType> | Error | OptionsType;
 export function processor( argv: any ): Promise<ParsedArgv>;
 
 declare global {
