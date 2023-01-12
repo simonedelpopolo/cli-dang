@@ -1,29 +1,25 @@
 import { async_, number_, oftype_, OftypesError, resolvers, undefined_ } from 'oftypes'
-import { options } from '@cli-dang/input'
 import { true_false } from '@cli-dang/boolean'
 
 export default async function* check_flag<CheckFlag> ( data:CheckFlag, name:string, is_void = true, type: string, cb = null ):AsyncGenerator<CheckFlag>{
 
-  const void_truthy = () => true
-  const void_falsy = () => new OftypesError( `♠ ${name} doesn't accept any value` )
+  const void_truthy = ():boolean => true
+  const void_falsy = ():OftypesError => new OftypesError( `♠ ${name} doesn't accept any value` )
 
   const check_type = async <type>( data: type ):Promise<type|OftypesError> => {
 
     if( typeof data === 'undefined' )
-      return new OftypesError( `♠ ${name} doesn't accept any other type than: ${type}` )
+      return new OftypesError( `♠ ${name} can't be undefined` )
 
-    const bool = await true_false( <string> data ).catch( error => error )
+    const bool:Error|boolean = await true_false( <string> data ).catch( error => error )
     if( ! ( bool instanceof Error )  )
       data = <type> bool
 
     if( await number_( data ) )
-      data = <type>Number( data )
+      data = <type> Number( data )
 
-    if( await oftype_( data ) === type.charAt( 0 ).toUpperCase() + type.slice( 1 ) && type !== 'opts' )
+    if( await oftype_( data ) === type.charAt( 0 ).toUpperCase() + type.slice( 1 ) )
       return data
-
-    if( type === 'opts' )
-      return options( <string> data, name ).catch( error => error )
 
     return new OftypesError( `♠ ${name} doesn't accept any other type than: ${type}` )
 
