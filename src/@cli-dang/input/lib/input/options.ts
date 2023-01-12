@@ -2,11 +2,12 @@ import match from './functions/match'
 import { error_message_text } from './functions/text/error_message'
 import { number_, OftypesError } from 'oftypes'
 
-export async function options( pattern:string, reference_to_flag:string ):Promise<OftypesError|object>{
+export async function options( pattern:string, reference_to_flag:string ):Promise<OftypesError|OptionsType>{
 
-  let parsed_options:object|undefined|OftypesError = undefined
+  let parsed_options:OptionsType|undefined|OftypesError = undefined
   if( await number_( pattern ) )
     parsed_options = error_message_text( pattern, reference_to_flag )
+
   else {
     /**
    * @ flag options should match the pattern
@@ -35,7 +36,6 @@ export async function options( pattern:string, reference_to_flag:string ):Promis
       parsed_options = await match( matches[ 0 ] || pattern, !!matches_single ).catch( error => error )
 
   }
-
 
   return new Promise( ( resolve, reject ) => {
     if( parsed_options instanceof Error )
