@@ -1,32 +1,62 @@
-import { OftypesError } from 'oftypes'
-export declare function entry_point(argv: string[], logic: LogicParameter): Promise<void>;
-export function options( pattern:string, reference_to_flag:string ):Promise<OftypesError|object>;
-export declare function processor(argv: any): Promise<ParsedArgv>;
-export const Command:Commands
-export declare type ParsedArgv = { [ p: string ]: unknown, keys: string[] }
-export declare type LogicParameter = ( data: ParsedArgv ) => Promise<void>
-export declare type FlagType = 'string' | 'boolean' | 'number' | 'opts' | 'json' | 'buf'
-export declare type FLAG = {
-  long?: string|null
-  short?: string|null
-  description?: string|null
-  usage?:string|null
-  void?:boolean
-  type?:FlagType
-  check?: boolean
-  cb?: { function:FlagsCallBack, arguments?: Array<boolean|string|object|number> }
+export function entry_point( argv: string[], logic: LogicParameter ): Promise<void>;
+export function options( pattern: string, reference_to_flag: string, no_async:boolean ): Promise<Error | OptionsType> | Error | OptionsType;
+export function processor( argv: any ): Promise<ParsedArgv>;
+
+declare global {
+  type OptionsType = {
+    [p:string]:string
+  }
+  type InterceptHelp = { command: string, flag: string }
+  type ParsedArgv = { [ p: string ]: unknown, keys: string[]} & { help?: InterceptHelp }
+  type RestArgsCallbacks = Array<boolean | string | object | number>
+  type LogicParameter = ( data: ParsedArgv ) => Promise<void>
+  
+  type FlagType = 'string' | 'boolean' | 'number' | 'opts' | 'json' | 'buf'
+  type FlagDescriptor = {
+    alias?: string[] | undefined
+    implement?: Flag
+  }
+  type Flag = {
+    long?: string | null
+    short: string | null
+    description?: string | null
+    usage?: string | null
+    void?: boolean | null
+    type?: FlagType | null
+    check?: boolean | null
+    cb?: { function: FlagsCallBack, arguments?: RestArgsCallbacks } | null
+  }
+  type FlagsCallBack =
+    ( <cb>( data: cb, ...rest_args: RestArgsCallbacks ) => Promise<void> | void | Promise<cb> | cb )
+    | null
+  
+  type CommandCallBack =
+    ( <cb>( data: cb, ...rest_args: RestArgsCallbacks ) => Promise<void> | void | Promise<cb> | cb )
+    | null
+  type CommandsDefinition = {
+    [ name: string ]: {
+      flags?: { [ name: string ]: Flag } | null,
+      cb: CommandCallBack,
+      arguments?: boolean
+    }
+  }
+  type checkoutCommand = {
+    flags?: {
+      [ p: string ]: Flag
+    }
+  }
+  
+  interface InterfaceCommand {
+    checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition | boolean>;
+    intercept( parsed:ParsedArgv ):Promise<void>;
+    define: ( name: string, cb: CommandCallBack, arguments?: boolean ) => void;
+    flag: ( name: string, descriptor: FlagDescriptor ) => void;
+  }
 }
-export declare type FlagsCallBack = ( <cb>( arg:cb, ...arguments:[] )=>Promise<void>|void|Promise<cb>|cb ) | null
-export declare type CommandCallBack = ( <cb>( arg:cb )=>Promise<void>|void|Promise<cb>|cb ) | null
-export declare type CommandsDefinition = { [name:string]: {
-    flags?:{
-             [name:string]:FLAG
-           } | null,
-    cb:CommandCallBack
-  } }
-export declare interface Commands {
-  retrieve: ( name?:string|undefined ) => CommandsDefinition|undefined
-  interceptor: ( parsed: ParsedArgv ) => Promise<void>
-  define: ( name:string, cb:CommandCallBack ) => void
-  flag: ( name:string, descriptor: FLAG, alias?:string[] |undefined  ) => void
+
+export class Command implements InterfaceCommand {
+  checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition | boolean>;
+  intercept( parsed:ParsedArgv ):Promise<void>;
+  define: ( name: string, cb: CommandCallBack, arguments?: boolean ) => void;
+  flag: ( name: string, descriptor: FlagDescriptor ) => void;
 }
