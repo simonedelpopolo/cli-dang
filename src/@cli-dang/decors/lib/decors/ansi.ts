@@ -1,5 +1,3 @@
-import { ANSI } from './types'
-
 const ansi:ANSI = {
   black: {
     foreground: '30m',

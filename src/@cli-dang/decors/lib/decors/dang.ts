@@ -1,6 +1,5 @@
 import ansi from './ansi'
 import escape from './escape'
-import { RGB } from './types'
 
 export const Dang = {
 
