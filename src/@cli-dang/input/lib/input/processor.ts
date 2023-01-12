@@ -1,7 +1,7 @@
 import { OftypesError } from 'oftypes'
-import { ParsedArgv } from './types'
-import { randomUUID } from 'node:crypto'
+import { optionsSync } from './functions/optionsSync'
 
+/* @think_it editing RegEx to include the '-' dash/s symbol */
 export async function processor( argv:string[] ):Promise<ParsedArgv|OftypesError>{
 
   return new Promise( ( resolve, reject ) => {
@@ -12,13 +12,8 @@ export async function processor( argv:string[] ):Promise<ParsedArgv|OftypesError
     if( argv.length === 0 )
       reject( new OftypesError( '♠ empty argv' ) )
 
-    const uuid_empty = randomUUID().slice( 0, 4 )
-    const uuid_equal = randomUUID().slice( 0, 4 )
-
-    const regExpression = /([^-](?!-)[.?]*=*[.?]*\S*)(\s*[.?]*)/g
-    let argumentsString = ''
-
-
+    const arguments_array = []
+    arguments_array.push( [ argv[ 0 ] ] )
     for ( const index in argv ) {
 
       if( typeof argv[ index ] === 'number' )
@@ -27,30 +22,33 @@ export async function processor( argv:string[] ):Promise<ParsedArgv|OftypesError
       if( argv[ index ].length === 0 )
         reject( new OftypesError( '♠ empty string.' ) )
 
+      //@ match empty spaces
       if( argv[ index ].match( /^\s+$/ ) )
         reject( new OftypesError( '♠ pattern does not match anything or encountered a problem.' ) )
 
-      argumentsString += `${ argv[ index ].replaceAll( ' ', uuid_empty ) } `/*<-- do not remove this empty chars*/
+      if( index !== '0' ) {
+        arguments_array.push(
+          Array.from( argv[ index ].matchAll( /(.*?)=(.*?$)/g ), match => [
+            match[ 1 ],
+            match[ 2 ],
+          ] )[ 0 ],
+        )
+      }
     }
 
-    const process_arguments = []
-    const matches = Array.from( argumentsString.matchAll( regExpression ), matches => matches[ 1 ] )
+    const argv_to_object = Object.fromEntries( arguments_array )
 
-    for ( const index in matches ) {
-      process_arguments.push( matches[ index ]
-        .replaceAll( uuid_empty, ' ' )
-        .replace( '=', uuid_equal )
-        .split( uuid_equal ) )
-    }
-
-    const argv_to_object = Object.fromEntries( process_arguments )
-
-    // @todo add option to function.
-    const replace_with_underscore = false
-    if( replace_with_underscore ) {
-      for ( const key in argv_to_object ) {
-        if ( key.search( '-' ) > 0 )
-          argv_to_object[ key.replaceAll( '-', '_' ) ] = argv_to_object[ key ]
+    /**
+     * Automatic recognizing the @cli-dang/input.optionsSync_private syntax
+     * Mixing @cli-dang/input.options and @cli-dang/object.string_to_object and make them NOT async/Promise
+     *
+     * @think_it testing functionalities
+     */
+    for ( const [ argv_option ] of Object.entries( argv_to_object ) ){
+      if( typeof argv_to_object[ argv_option ] !== 'undefined' ) {
+        const opts = optionsSync( argv_to_object[ argv_option ] )
+        if ( !( opts instanceof Error ) )
+          argv_to_object[ argv_option ] = opts
       }
     }
 
