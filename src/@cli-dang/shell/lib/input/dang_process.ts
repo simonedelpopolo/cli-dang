@@ -1,4 +1,4 @@
-import { Command, ParsedArgv } from '@cli-dang/input'
+import { Command } from '@cli-dang/input'
 import { init } from '../shell/init/init'
 
 export async function dang_process( parsed:ParsedArgv ):Promise<void>{
@@ -7,37 +7,13 @@ export async function dang_process( parsed:ParsedArgv ):Promise<void>{
     init( data )
   }
 
-  const void_clear_cb =<cb> ( data:cb ):cb => {
-    return <cb> JSON.stringify( data )
-  }
-
-  const dang_commands = Command
+  const dang_commands = new Command()
   dang_commands.define( 'init', init_bare )
-  dang_commands.flag( 'bare' )
-    .long( '--bare' )
-    .void( true )
-    .check( true )
+  dang_commands.flag( '--bare', {
+    implement:{ short:'--bare' }
+  } )
 
-  dang_commands.flag( 'void' )
-    .long( '--void' )
-    .void( false )
-    .type( 'boolean' )
-    .check( true )
-
-  dang_commands.define( 'clean', init_bare )
-  dang_commands.flag( 'bare' )
-    .long( '--bare' )
-    .void( true )
-    .check( true )
-
-  dang_commands.flag( 'void' )
-    .long( '--void' )
-    .void( false )
-    .type( 'opts' )
-    .check( true )
-    .cb( void_clear_cb )
-
-  await dang_commands.interceptor( parsed )
+  await dang_commands.intercept( parsed )
 
 
 }
