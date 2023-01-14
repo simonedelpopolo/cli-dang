@@ -1,7 +1,7 @@
 import { async_, number_, oftype_, OftypesError, resolvers, undefined_ } from 'oftypes'
 import { true_false } from '@cli-dang/boolean'
 
-export default async function* check_flag<CheckFlag> ( data:CheckFlag, name:string, is_void = true, type: string, cb = null ):AsyncGenerator<CheckFlag>{
+export default async function* check_flag<CheckFlag> ( data:CheckFlag, name:string, is_void = true, type: string, cb = null ):AsyncGenerator<unknown>{
 
   const void_truthy = ():boolean => true
   const void_falsy = ():OftypesError => new OftypesError( `♠ ${name} doesn't accept any value` )
