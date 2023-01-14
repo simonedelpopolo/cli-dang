@@ -49,7 +49,7 @@ export async function processor( argv:string[] ):Promise<ParsedArgv|OftypesError
      * @think_it testing functionalities
      */
     for ( const [ argv_option ] of Object.entries( argv_to_object ) ){
-      if( typeof argv_to_object[ argv_option ] !== 'undefined' ) {
+      if( typeof argv_to_object[ argv_option ] !== 'undefined' && argv_to_object[ argv_option ] !== null ) {
         const opts = optionsSync( argv_to_object[ argv_option ] )
         if ( !( opts instanceof Error ) )
           argv_to_object[ argv_option ] = opts
