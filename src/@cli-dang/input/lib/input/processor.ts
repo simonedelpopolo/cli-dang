@@ -1,7 +1,6 @@
 import { OftypesError } from 'oftypes'
 import { optionsSync } from './functions/optionsSync'
 
-/* @think_it editing RegEx to include the '-' dash/s symbol */
 export async function processor( argv:string[] ):Promise<ParsedArgv|OftypesError>{
 
   return new Promise( ( resolve, reject ) => {
@@ -27,12 +26,17 @@ export async function processor( argv:string[] ):Promise<ParsedArgv|OftypesError
         reject( new OftypesError( '♠ pattern does not match anything or encountered a problem.' ) )
 
       if( index !== '0' ) {
-        arguments_array.push(
-          Array.from( argv[ index ].matchAll( /(.*?)=(.*?$)/g ), match => [
+
+        if( argv[ index ].match( /=\S*$/g ) === null )
+          argv[ index ] = `${argv[ index ]}=undefined`
+
+        const match_pattern =  argv[ index ].matchAll( /(.*?)=(.*?$)/g )
+        for( const match of match_pattern ) {
+          arguments_array.push( [
             match[ 1 ],
-            match[ 2 ],
-          ] )[ 0 ],
-        )
+            match[ 2 ] === 'undefined' ? null : match[ 2 ],
+          ] )
+        }
       }
     }
 

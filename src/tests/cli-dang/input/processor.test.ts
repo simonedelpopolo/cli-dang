@@ -176,3 +176,25 @@ export async function argv_with_options_syntax( id ){
 
   tttt.end( id, success, UNITName, message )
 }
+
+export async function match_empty_flag( id ){
+
+  let success = true
+  let message:undefined|string = undefined
+  const UNITName = '@cli-dang/input.processor match empty flag'
+
+  const result:boolean|Error = await tttt.deepStrictEqual( async () => {
+
+    const actual:ParsedArgv = await processor( [ 'bim', '--gastro' ] ).catch( error => error )
+    const expected = { object: { '--gastro': null, bim: undefined }, keys:[ 'bim', '--gastro' ] }
+
+    return tttt.resolvers( actual, expected )
+  } )
+
+  if( result instanceof Error ){
+    success = false
+    message = result.message
+  }
+
+  tttt.end( id, success, UNITName, message )
+}
