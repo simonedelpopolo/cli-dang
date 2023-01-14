@@ -1,5 +1,5 @@
 export function entry_point( argv: string[], logic: LogicParameter ): Promise<void>;
-export function options( pattern: string, reference_to_flag: string ): Promise<Error | OptionsType> | Error | OptionsType;
+export function options( pattern: string, reference_to_flag: string ): Promise<Error | OptionsType>;
 export function processor( argv: any ): Promise<ParsedArgv>;
 
 declare global {
@@ -7,7 +7,7 @@ declare global {
     [p:string]:string
   }
   type InterceptHelp = { command: string, flag: string }
-  type ParsedArgv = { [ p: string ]: unknown, keys: string[]} & { help?: InterceptHelp }
+  type ParsedArgv = { [ p: string ]: unknown, keys: string[], flag?: object|string, command?:string} & { help?: InterceptHelp }
   type RestArgsCallbacks = Array<boolean | string | object | number>
   type LogicParameter = ( data: ParsedArgv ) => Promise<void>
   
