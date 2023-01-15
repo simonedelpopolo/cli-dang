@@ -11,12 +11,8 @@ declare global {
   type RestArgsCallbacks = Array<boolean | string | object | number>
   type LogicParameter = ( data: ParsedArgv ) => Promise<void>
   
-  type FlagType = 'string' | 'boolean' | 'number' | 'opts' | 'json' | 'buf'
-  type FlagDescriptor = {
-    alias?: string[] | undefined
-    implement?: Flag
-  }
-  type Flag = {
+  type FlagType = 'string' | 'boolean' | 'number' | 'opts' | 'json' | 'buf' | 'null'
+  type FlagDescriptor ={
     long?: string | null
     short: string | null
     description?: string | null
@@ -24,7 +20,8 @@ declare global {
     void?: boolean | null
     type?: FlagType | null
     check?: boolean | null
-    cb?: { function: FlagsCallBack, arguments?: RestArgsCallbacks } | null
+    cb?: FlagsCallBack | null,
+    rest_args?: RestArgsCallbacks
   }
   type FlagsCallBack =
     ( <cb>( data: cb, ...rest_args: RestArgsCallbacks ) => Promise<void> | void | Promise<cb> | cb )
@@ -35,28 +32,28 @@ declare global {
     | null
   type CommandsDefinition = {
     [ name: string ]: {
-      flags?: { [ name: string ]: Flag } | null,
+      flags?: { [ name: string ]: FlagDescriptor } | null,
       cb: CommandCallBack,
-      arguments?: boolean
+      rest_args?: RestArgsCallbacks
     }
   }
   type checkoutCommand = {
     flags?: {
-      [ p: string ]: Flag
+      [ p: string ]: FlagDescriptor
     }
   }
   
   interface InterfaceCommand {
     checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition | boolean>;
     intercept( parsed:ParsedArgv ):Promise<void>;
-    define: ( name: string, cb: CommandCallBack, arguments?: boolean ) => void;
-    flag: ( name: string, descriptor: FlagDescriptor ) => void;
+    define: ( name: string, cb: CommandCallBack, rest_args?:RestArgsCallbacks ) => void;
+    flag: ( name: string|string[], descriptor: FlagDescriptor ) => void;
   }
 }
 
 export class Command implements InterfaceCommand {
   checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition | boolean>;
   intercept( parsed:ParsedArgv ):Promise<void>;
-  define: ( name: string, cb: CommandCallBack, arguments?: boolean ) => void;
-  flag: ( name: string, descriptor: FlagDescriptor ) => void;
+  define: ( name: string, cb: CommandCallBack, rest_args?:RestArgsCallbacks ) => void;
+  flag: ( name: string|string[], descriptor: FlagDescriptor ) => void;
 }
