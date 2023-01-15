@@ -1,5 +1,5 @@
 import check_flag from './check/flag'
-import { async_, oftype_, resolvers, undefined_ } from 'oftypes'
+import { array_, async_, oftype_, resolvers } from 'oftypes'
 import { Dang } from '@cli-dang/decors'
 import { error_code } from '@cli-dang/error'
 import { exit } from '@cli-dang/activity'
@@ -27,7 +27,6 @@ export class Command implements InterfaceCommand{
 
   public async intercept( parsed:ParsedArgv ):Promise<void> {
     let executed: null | string = null
-    let command_argument: null | string = null
 
     if( parsed?.help ) {
 
@@ -43,12 +42,10 @@ export class Command implements InterfaceCommand{
       if (  commands?.[ key ] ) {
 
         executed = key
-        if ( typeof parsed.object[ key ] !== 'undefined' && commands[ key ].arguments === false )
+        if ( parsed.object?.[ key ] )
           await exit( `♠ command ${ Dang.red( key ) } doesn't accept any argument`, undefined, error_code.COMMAND )
-        else
-          command_argument = parsed.object[ key ]
-        parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
 
+        parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
         parsed.command = key
 
         delete parsed.object[ key ]
@@ -65,7 +62,8 @@ export class Command implements InterfaceCommand{
                   flag,
                   commands[ key ].flags[ flag ].void,
                   commands[ key ].flags[ flag ].type,
-                  commands[ key ].flags[ flag ].cb
+                  commands[ key ].flags[ flag ].cb,
+                  commands[ key ].flags[ flag ].rest_args
                 ) ) {
                   if ( type_check instanceof Error )
                     await exit( type_check.message, undefined, error_code.FLAG )
@@ -88,43 +86,46 @@ export class Command implements InterfaceCommand{
 
     if( commands[ executed ]?.cb ) {
       if ( await async_( commands[ executed ].cb ) )
-        await commands[ executed ].cb( parsed, ...( command_argument || [] ) )
+        await commands[ executed ].cb( parsed, ...( commands[ executed ].rest_args ) )
       else
-        commands[ executed ].cb( parsed, ...( command_argument || [] ) )
+        commands[ executed ].cb( parsed, ...( commands[ executed ].rest_args ) )
 
     }
 
   }
 
-  public define( name: string, cb: CommandCallBack, args?: boolean ) {
+  public define( name: string, cb: CommandCallBack, rest_args: RestArgsCallbacks = [] ) {
     this.#_name = name
     if ( !commands[ this.#_name ] )
-      commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, arguments: args }
+      commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
   }
 
-  public async flag( name: string, descriptor: FlagDescriptor ) {
+  public async flag( name: string|string[], descriptor: FlagDescriptor ) {
+
     const populate = ( data ) => {
       commands[ this.#_name ].flags[ data ] = {
-        long: descriptor.implement.long || null,
-        short: descriptor.implement.short || null,
-        description: descriptor.implement.description || null,
-        usage: descriptor.implement.usage || null,
-        void: descriptor.implement.void || false,
-        type: descriptor.implement.type || 'string',
-        check: descriptor.implement.check || false,
-        cb: descriptor.implement.cb || null
+        long: descriptor.long || null,
+        short: descriptor.short || null,
+        description: descriptor.description || null,
+        usage: descriptor.usage || null,
+        void: descriptor.void || false,
+        type: descriptor.type || 'string',
+        check: descriptor.check || false,
+        cb: descriptor.cb || null,
+        rest_args: descriptor.rest_args || []
       }
     }
 
     const truthy = () => {
-      populate( name )
+      for ( const alias of name )
+        populate( alias )
+
     }
     const falsy = () => {
-      for ( const alias_flag of descriptor.alias )
-        populate( alias_flag )
+      populate( name )
     }
 
-    const implementation: () => void = <() => void>await undefined_( descriptor.alias, await resolvers( truthy, falsy ) )
+    const implementation: () => void = <() => void>await array_( name, await resolvers( truthy, falsy ) )
     implementation()
   }
 
