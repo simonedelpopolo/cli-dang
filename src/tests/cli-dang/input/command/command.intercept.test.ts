@@ -47,7 +47,7 @@ export async function intercept_data( id ){
 
       let result: Error
       try {
-        assert.deepStrictEqual( JSON.parse( stdout ), { object:{ get:'this' }, keys:[] } )
+        assert.deepStrictEqual( JSON.parse( stdout ), { object:{ get:'this' }, keys:[], command: 'name' } )
       } catch ( error ) {
         result = error
       }
