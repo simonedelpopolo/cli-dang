@@ -1,5 +1,5 @@
 import check_flag from './check/flag'
-import { array_, async_, oftype_, resolvers } from 'oftypes'
+import { array_, async_, resolvers } from 'oftypes'
 import { Dang } from '@cli-dang/decors'
 import { error_code } from '@cli-dang/error'
 import { exit } from '@cli-dang/activity'
@@ -17,11 +17,9 @@ export class Command implements InterfaceCommand{
     this.#_commands = {}
   }
 
-  public async checkout( name?: string | undefined )
-    : Promise<checkoutCommand | CommandsDefinition > {
-    const retrieve_commands: CommandsDefinition = <CommandsDefinition>await oftype_( name, { 'undefined': this.#_commands } )
+  public async checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition > {
 
-    if ( !retrieve_commands && this.#_commands[ name ] )
+    if ( name && this.#_commands?.[ name ] )
       return this.#_commands[ name ]
     else if ( !name )
       return this.#_commands
