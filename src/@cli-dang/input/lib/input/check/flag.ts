@@ -18,6 +18,9 @@ export default async function* check_flag<CheckFlag> ( data:CheckFlag, name:stri
     if( await number_( data ) )
       data = <type> Number( data )
 
+    if( data === null )
+      if ( ( await oftype_( data ) ) === type ) return data
+
     if( await oftype_( data ) === type.charAt( 0 ).toUpperCase() + type.slice( 1 ) )
       return data
 
