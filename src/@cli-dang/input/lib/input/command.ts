@@ -4,22 +4,27 @@ import { Dang } from '@cli-dang/decors'
 import { error_code } from '@cli-dang/error'
 import { exit } from '@cli-dang/activity'
 
-const commands: CommandsDefinition = {}
-
 export class Command implements InterfaceCommand{
 
-  #_name: string | undefined = undefined
+  #_name: string | undefined
 
   #_target: { command: string, flag: string }
 
+  readonly #_commands : CommandsDefinition
+
+  constructor() {
+    this.#_name = undefined
+    this.#_commands = {}
+  }
+
   public async checkout( name?: string | undefined )
     : Promise<checkoutCommand | CommandsDefinition > {
-    const retrieve_commands: CommandsDefinition = <CommandsDefinition>await oftype_( name, { 'undefined': commands } )
+    const retrieve_commands: CommandsDefinition = <CommandsDefinition>await oftype_( name, { 'undefined': this.#_commands } )
 
-    if ( !retrieve_commands && commands[ name ] )
-      return commands[ name ]
+    if ( !retrieve_commands && this.#_commands[ name ] )
+      return this.#_commands[ name ]
     else if ( !name )
-      return commands
+      return this.#_commands
 
     return undefined
 
@@ -39,7 +44,7 @@ export class Command implements InterfaceCommand{
 
     for ( const key of parsed.keys ) {
 
-      if (  commands?.[ key ] ) {
+      if (  this.#_commands?.[ key ] ) {
 
         executed = key
         if ( parsed.object?.[ key ] )
@@ -52,18 +57,18 @@ export class Command implements InterfaceCommand{
 
         for ( const flag of Object.keys( parsed.object ) ) {
 
-          if ( commands[ key ]?.flags ) {
+          if ( this.#_commands[ key ]?.flags ) {
             /* - if a flag is present */
-            if( commands[ key ].flags?.[ flag ] ){
-              if ( commands[ key ].flags[ flag ].check ) {
+            if( this.#_commands[ key ].flags?.[ flag ] ){
+              if ( this.#_commands[ key ].flags[ flag ].check ) {
 
                 for await ( const type_check of check_flag(
                   parsed.object[ flag ],
                   flag,
-                  commands[ key ].flags[ flag ].void,
-                  commands[ key ].flags[ flag ].type,
-                  commands[ key ].flags[ flag ].cb,
-                  commands[ key ].flags[ flag ].rest_args
+                  this.#_commands[ key ].flags[ flag ].void,
+                  this.#_commands[ key ].flags[ flag ].type,
+                  this.#_commands[ key ].flags[ flag ].cb,
+                  this.#_commands[ key ].flags[ flag ].rest_args
                 ) ) {
                   if ( type_check instanceof Error )
                     await exit( type_check.message, undefined, error_code.FLAG )
@@ -84,11 +89,11 @@ export class Command implements InterfaceCommand{
 
     }
 
-    if( commands[ executed ]?.cb ) {
-      if ( await async_( commands[ executed ].cb ) )
-        await commands[ executed ].cb( parsed, ...( commands[ executed ].rest_args ) )
+    if( this.#_commands[ executed ]?.cb ) {
+      if ( await async_( this.#_commands[ executed ].cb ) )
+        await this.#_commands[ executed ].cb( parsed, ...( this.#_commands[ executed ].rest_args ) )
       else
-        commands[ executed ].cb( parsed, ...( commands[ executed ].rest_args ) )
+        this.#_commands[ executed ].cb( parsed, ...( this.#_commands[ executed ].rest_args ) )
 
     }
 
@@ -96,14 +101,14 @@ export class Command implements InterfaceCommand{
 
   public define( name: string, cb: CommandCallBack, rest_args: RestArgsCallbacks = [] ) {
     this.#_name = name
-    if ( !commands[ this.#_name ] )
-      commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
+    if ( !this.#_commands[ this.#_name ] )
+      this.#_commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
   }
 
   public async flag( name: string|string[], descriptor: FlagDescriptor ) {
 
     const populate = ( data ) => {
-      commands[ this.#_name ].flags[ data ] = {
+      this.#_commands[ this.#_name ].flags[ data ] = {
         long: descriptor.long || null,
         short: descriptor.short || null,
         description: descriptor.description || null,
@@ -130,7 +135,7 @@ export class Command implements InterfaceCommand{
   }
 
   async #help(){
-    const help_message = `${commands[ this.#_target.command ].flags[ this.#_target.flag ].description} ${commands[ this.#_target.command ].flags[ this.#_target.flag ].usage}`
+    const help_message = `${this.#_commands[ this.#_target.command ].flags[ this.#_target.flag ].description} ${this.#_commands[ this.#_target.command ].flags[ this.#_target.flag ].usage}`
     process.stdout.write( help_message )
   }
 }
