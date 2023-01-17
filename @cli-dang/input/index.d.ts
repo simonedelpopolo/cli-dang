@@ -37,6 +37,12 @@ declare global {
       rest_args?: RestArgsCallbacks
     }
   }
+  type GlobalFlag = {
+      [ name: string ]: {
+        cb: CommandCallBack,
+        rest_args?: RestArgsCallbacks
+      }
+  }
   type checkoutCommand = {
     flags?: {
       [ p: string ]: FlagDescriptor
