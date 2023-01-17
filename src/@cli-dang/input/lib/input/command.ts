@@ -10,22 +10,33 @@ export class Command implements InterfaceCommand{
 
   #_target: { command: string, flag: string }
 
-  #global_flag : GlobalFlag
+  readonly #_global_flag : GlobalFlag
 
   readonly #_commands : CommandsDefinition
 
   constructor() {
     this.#_name = undefined
     this.#_commands = {}
-    this.#global_flag = {}
+    this.#_global_flag = {}
   }
 
-  public async checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition > {
+  public checkout( name?: string | undefined ): checkoutCommand | CommandsDefinition {
 
     if ( name && this.#_commands?.[ name ] )
       return this.#_commands[ name ]
     else if ( !name )
       return this.#_commands
+
+    return undefined
+
+  }
+
+  public checkout_global( name?: string | undefined ): checkoutGlobal | GlobalFlag {
+
+    if ( name && this.#_global_flag?.[ name ] )
+      return this.#_global_flag[ name ]
+    else if ( !name )
+      return this.#_global_flag
 
     return undefined
 
@@ -43,7 +54,7 @@ export class Command implements InterfaceCommand{
 
     }
 
-    if( Object.keys( this.#global_flag ).length > 0 )
+    if( Object.keys( this.#_global_flag ).length > 0 )
       await this.#global( parsed )
 
     for ( const key of parsed.keys ) {
@@ -104,10 +115,10 @@ export class Command implements InterfaceCommand{
 
   }
 
-  public define( name: string, cb: CommandCallBack, global = false, rest_args: RestArgsCallbacks = [] ) {
+  public define( name: string, cb: CommandCallBack, global = false, rest_args: RestArgsCallbacks = [] ):void {
     this.#_name = name
     if( global ){
-      this.#global_flag[ name ] = {
+      this.#_global_flag[ name ] = {
         [ 'cb' ]: cb,
         rest_args: rest_args,
       }
@@ -119,7 +130,7 @@ export class Command implements InterfaceCommand{
     }
   }
 
-  public async flag( name: string|string[], descriptor: FlagDescriptor ) {
+  public async flag( name: string|string[], descriptor: FlagDescriptor ):Promise<void> {
 
     const populate = ( data ) => {
       this.#_commands[ this.#_name ].flags[ data ] = {
@@ -148,14 +159,14 @@ export class Command implements InterfaceCommand{
     implementation()
   }
 
-  async #global( parsed ){
+  async #global( parsed ):Promise<void>{
     for( const key of parsed.keys ){
-      if( Object.keys( this.#global_flag ).includes( key ) ) {
-        if ( this.#global_flag[ key ]?.cb ) {
-          if ( await async_( this.#global_flag[ key ].cb ) )
-            await this.#global_flag[ key ].cb( parsed, ...this.#global_flag[ key ].rest_args )
+      if( Object.keys( this.#_global_flag ).includes( key ) ) {
+        if ( this.#_global_flag[ key ]?.cb ) {
+          if ( await async_( this.#_global_flag[ key ].cb ) )
+            await this.#_global_flag[ key ].cb( parsed, ...this.#_global_flag[ key ].rest_args )
           else
-            this.#global_flag[ key ].cb( parsed, ...this.#global_flag[ key ].rest_args )
+            this.#_global_flag[ key ].cb( parsed, ...this.#_global_flag[ key ].rest_args )
 
         }
         parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
@@ -165,7 +176,7 @@ export class Command implements InterfaceCommand{
 
   }
 
-  async #help(){
+  #help():void{
     const help_message = `${this.#_commands[ this.#_target.command ].flags[ this.#_target.flag ].description} ${this.#_commands[ this.#_target.command ].flags[ this.#_target.flag ].usage}`
     process.stdout.write( help_message )
   }

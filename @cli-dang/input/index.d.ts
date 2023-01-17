@@ -49,17 +49,26 @@ declare global {
     }
   }
   
+  
+  type checkoutGlobal = {
+    cb: CommandCallBack,
+    rest_args?: RestArgsCallbacks
+  }
+  
+  
   interface InterfaceCommand {
-    checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition | boolean>;
+    checkout( name?: string | undefined ): checkoutCommand | CommandsDefinition;
+    checkout_global( name?: string | undefined ): checkoutGlobal | GlobalFlag;
     intercept( parsed:ParsedArgv ):Promise<void>;
     define: ( name: string, cb: CommandCallBack, global?:boolean, rest_args?:RestArgsCallbacks ) => void;
-    flag: ( name: string|string[], descriptor: FlagDescriptor ) => void;
+    flag: ( name: string|string[], descriptor: FlagDescriptor ) => Promise<void>;
   }
 }
 
 export class Command implements InterfaceCommand {
-  checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition | boolean>;
-  intercept( parsed:ParsedArgv ):Promise<void>;
+  checkout( name?: string | undefined ): checkoutCommand | CommandsDefinition;
+  checkout_global( name?: string | undefined ): checkoutGlobal | GlobalFlag;
+  intercept( parsed:ParsedArgv ): Promise<void>;
   define: ( name: string, cb: CommandCallBack, global?:boolean, rest_args?:RestArgsCallbacks ) => void;
-  flag: ( name: string|string[], descriptor: FlagDescriptor ) => void;
+  flag: ( name: string|string[], descriptor: FlagDescriptor ) => Promise<void>;
 }
