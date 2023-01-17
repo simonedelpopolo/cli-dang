@@ -3,6 +3,7 @@ import { array_, async_, resolvers } from 'oftypes'
 import { Dang } from '@cli-dang/decors'
 import { error_code } from '@cli-dang/error'
 import { exit } from '@cli-dang/activity'
+import { processor } from '@cli-dang/input'
 
 export class Command implements InterfaceCommand{
 
@@ -161,14 +162,23 @@ export class Command implements InterfaceCommand{
 
   async #global( parsed ):Promise<void>{
     for( const key of parsed.keys ){
-      if( Object.keys( this.#_global_flag ).includes( key ) ) {
-        if ( this.#_global_flag[ key ]?.cb ) {
-          if ( await async_( this.#_global_flag[ key ].cb ) )
-            await this.#_global_flag[ key ].cb( parsed, ...this.#_global_flag[ key ].rest_args )
+      const parsed_global = await processor( [ 'global', key ] )
+      let parameter = undefined
+      if( parsed_global.keys[ 1 ].match( '=' ) )
+        parameter = key.replace( parsed_global.keys[ 1 ], '' ).replace( '=', '' )
+
+
+      if ( Object.keys( this.#_global_flag ).includes( parsed_global.keys[ 1 ] ) ) {
+
+        if ( this.#_global_flag[ parsed_global.keys[ 1 ] ]?.cb ) {
+
+          if ( await async_( this.#_global_flag[ parsed_global.keys[ 1 ] ].cb ) )
+            await this.#_global_flag[ parsed_global.keys[ 1 ] ].cb( parameter, ...this.#_global_flag[ parsed_global.keys[ 1 ] ].rest_args )
           else
-            this.#_global_flag[ key ].cb( parsed, ...this.#_global_flag[ key ].rest_args )
+            this.#_global_flag[ parsed_global.keys[ 1 ] ].cb( parameter, ...this.#_global_flag[ parsed_global.keys[ 1 ] ].rest_args )
 
         }
+
         parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
         delete parsed.object[ key ]
       }
