@@ -52,42 +52,45 @@ export class Command implements InterfaceCommand{
         if ( parsed.object?.[ key ] && !this.#_global )
           await exit( `♠ command ${ Dang.red( key ) } doesn't accept any argument`, undefined, error_code.COMMAND )
 
-        parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
-        parsed.command = key
-
-        if( this.#_global )
+        if ( this.#_global ) {
           global = parsed.object[ key ]
+          parsed.global = key
+        }
 
+        parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
         delete parsed.object[ key ]
 
-        for ( const flag of Object.keys( parsed.object ) ) {
+        if ( !this.#_global ) {
+          parsed.command = key
+          for ( const flag of Object.keys( parsed.object ) ) {
 
-          if ( this.#_commands[ key ]?.flags ) {
-            /* - if a flag is present */
-            if( this.#_commands[ key ].flags?.[ flag ] ){
-              if ( this.#_commands[ key ].flags[ flag ].check ) {
+            if ( this.#_commands[ key ]?.flags ) {
+              /* - if a flag is present */
+              if ( this.#_commands[ key ].flags?.[ flag ] ) {
+                if ( this.#_commands[ key ].flags[ flag ].check ) {
 
-                for await ( const type_check of check_flag(
-                  parsed.object[ flag ],
-                  flag,
-                  this.#_commands[ key ].flags[ flag ].void,
-                  this.#_commands[ key ].flags[ flag ].type,
-                  this.#_commands[ key ].flags[ flag ].cb,
-                  this.#_commands[ key ].flags[ flag ].rest_args
-                ) ) {
-                  if ( type_check instanceof Error )
-                    await exit( type_check.message, undefined, error_code.FLAG )
-                  parsed.object[ flag ] = type_check
-                  parsed.flag = { [ 'flag' ]:type_check } as object | string
+                  for await ( const type_check of check_flag(
+                    parsed.object[ flag ],
+                    flag,
+                    this.#_commands[ key ].flags[ flag ].void,
+                    this.#_commands[ key ].flags[ flag ].type,
+                    this.#_commands[ key ].flags[ flag ].cb,
+                    this.#_commands[ key ].flags[ flag ].rest_args
+                  ) ) {
+                    if ( type_check instanceof Error )
+                      await exit( type_check.message, undefined, error_code.FLAG )
+                    parsed.object[ flag ] = type_check
+                    parsed.flag = { [ 'flag' ]: type_check } as object | string
+                  }
                 }
-              }
-              parsed.keys.splice( parsed.keys.indexOf( flag ), 1 )
-            } else
+                parsed.keys.splice( parsed.keys.indexOf( flag ), 1 )
+              } else
 
-              await exit( `♠ flag ${ Dang.red( flag ) } not found`, undefined, error_code.FLAG )
+                await exit( `♠ flag ${ Dang.red( flag ) } not found`, undefined, error_code.FLAG )
+
+            }
 
           }
-
         }
       } else
         await exit( `♠ command ${ Dang.red( key ) } not found`, undefined, error_code.COMMAND )
