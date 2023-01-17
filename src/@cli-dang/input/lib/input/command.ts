@@ -10,14 +10,14 @@ export class Command implements InterfaceCommand{
 
   #_target: { command: string, flag: string }
 
-  #_global: boolean
+  #global_flag : GlobalFlag
 
   readonly #_commands : CommandsDefinition
 
   constructor() {
     this.#_name = undefined
     this.#_commands = {}
-    this.#_global = false
+    this.#global_flag = {}
   }
 
   public async checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition > {
@@ -33,7 +33,6 @@ export class Command implements InterfaceCommand{
 
   public async intercept( parsed:ParsedArgv ):Promise<void> {
     let executed: null | string = null
-    let global: string
 
     if( parsed?.help ) {
 
@@ -44,61 +43,56 @@ export class Command implements InterfaceCommand{
 
     }
 
+    if( Object.keys( this.#global_flag ).length > 0 )
+      await this.#global( parsed )
+
     for ( const key of parsed.keys ) {
 
       if (  this.#_commands?.[ key ] ) {
 
         executed = key
-        if ( parsed.object?.[ key ] && !this.#_global )
-          await exit( `♠ command ${ Dang.red( key ) } doesn't accept any argument`, undefined, error_code.COMMAND )
 
-        if ( this.#_global ) {
-          global = parsed.object[ key ]
-          parsed.global = key
-        }
+        if ( parsed.object?.[ key ] )
+          await exit( `♠ command ${ Dang.red( key ) } doesn't accept any argument`, undefined, error_code.COMMAND )
 
         parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
         delete parsed.object[ key ]
 
-        if ( !this.#_global ) {
-          parsed.command = key
-          for ( const flag of Object.keys( parsed.object ) ) {
+        parsed.command = key
+        for ( const flag of Object.keys( parsed.object ) ) {
 
-            if ( this.#_commands[ key ]?.flags ) {
-              /* - if a flag is present */
-              if ( this.#_commands[ key ].flags?.[ flag ] ) {
-                if ( this.#_commands[ key ].flags[ flag ].check ) {
+          if ( this.#_commands[ key ]?.flags ) {
+            /* - if a flag is present */
+            if ( this.#_commands[ key ].flags?.[ flag ] ) {
+              if ( this.#_commands[ key ].flags[ flag ].check ) {
 
-                  for await ( const type_check of check_flag(
-                    parsed.object[ flag ],
-                    flag,
-                    this.#_commands[ key ].flags[ flag ].void,
-                    this.#_commands[ key ].flags[ flag ].type,
-                    this.#_commands[ key ].flags[ flag ].cb,
-                    this.#_commands[ key ].flags[ flag ].rest_args
-                  ) ) {
-                    if ( type_check instanceof Error )
-                      await exit( type_check.message, undefined, error_code.FLAG )
-                    parsed.object[ flag ] = type_check
-                    parsed.flag = { [ 'flag' ]: type_check } as object | string
-                  }
+                for await ( const type_check of check_flag(
+                  parsed.object[ flag ],
+                  flag,
+                  this.#_commands[ key ].flags[ flag ].void,
+                  this.#_commands[ key ].flags[ flag ].type,
+                  this.#_commands[ key ].flags[ flag ].cb,
+                  this.#_commands[ key ].flags[ flag ].rest_args
+                ) ) {
+                  if ( type_check instanceof Error )
+                    await exit( type_check.message, undefined, error_code.FLAG )
+                  parsed.object[ flag ] = type_check
+                  parsed.flag = { [ 'flag' ]: type_check } as object | string
                 }
-                parsed.keys.splice( parsed.keys.indexOf( flag ), 1 )
-              } else
+              }
+              parsed.keys.splice( parsed.keys.indexOf( flag ), 1 )
+            } else
 
-                await exit( `♠ flag ${ Dang.red( flag ) } not found`, undefined, error_code.FLAG )
-
-            }
+              await exit( `♠ flag ${ Dang.red( flag ) } not found`, undefined, error_code.FLAG )
 
           }
+
         }
+
       } else
         await exit( `♠ command ${ Dang.red( key ) } not found`, undefined, error_code.COMMAND )
 
     }
-
-    if( this.#_global )
-      parsed.object[ executed ] = global
 
     if( this.#_commands[ executed ]?.cb ) {
       if ( await async_( this.#_commands[ executed ].cb ) )
@@ -112,10 +106,15 @@ export class Command implements InterfaceCommand{
 
   public define( name: string, cb: CommandCallBack, global = false, rest_args: RestArgsCallbacks = [] ) {
     this.#_name = name
-    if( global )
-      this.#_global = true
-    if ( !this.#_commands[ this.#_name ] )
-      this.#_commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
+    if( global ){
+      this.#global_flag[ name ]= {
+        [ 'cb' ]: cb,
+        rest_args: rest_args,
+      }
+    }
+
+    else ( !this.#_commands[ this.#_name ] )
+    this.#_commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
   }
 
   public async flag( name: string|string[], descriptor: FlagDescriptor ) {
@@ -145,6 +144,23 @@ export class Command implements InterfaceCommand{
 
     const implementation: () => void = <() => void>await array_( name, await resolvers( truthy, falsy ) )
     implementation()
+  }
+
+  async #global( parsed ){
+    if( Object.keys( this.#global_flag ).includes( parsed.keys[ 0 ] ) )
+    {
+      for( const global of Object.keys( this.#global_flag ) ){
+
+        if ( this.#global_flag[ global ]?.cb ) {
+          if ( await async_( this.#global_flag[ global ].cb ) )
+            await this.#global_flag[ global ].cb( parsed, ...this.#global_flag[ global ].rest_args )
+          else
+            this.#global_flag[ global ].cb( parsed, ...this.#global_flag[ global ].rest_args )
+
+        }
+        parsed.keys.splice( parsed.keys.indexOf( global ), 1 )
+        delete parsed.object[ global ]
+      }}
   }
 
   async #help(){
