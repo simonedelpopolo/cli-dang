@@ -68,10 +68,12 @@ export async function global_command_flag( id ) {
     tttt.end( id, success, UNITName, message )
   }, true )
 
+  command.define( 'command', () => {/*empty*/} )
+
   await command.intercept( {
-    object: { '--init': 'hello'  },
+    object: { '--init': 'hello', command: undefined  },
     keys: [
-      '--init'
+      '--init', 'command'
     ],
 
   } )
