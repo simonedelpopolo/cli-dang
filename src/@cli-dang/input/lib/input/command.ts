@@ -107,14 +107,16 @@ export class Command implements InterfaceCommand{
   public define( name: string, cb: CommandCallBack, global = false, rest_args: RestArgsCallbacks = [] ) {
     this.#_name = name
     if( global ){
-      this.#global_flag[ name ]= {
+      this.#global_flag[ name ] = {
         [ 'cb' ]: cb,
         rest_args: rest_args,
       }
     }
 
-    else ( !this.#_commands[ this.#_name ] )
-    this.#_commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
+    else {
+      if ( !this.#_commands[ this.#_name ] )
+        this.#_commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
+    }
   }
 
   public async flag( name: string|string[], descriptor: FlagDescriptor ) {
@@ -147,20 +149,20 @@ export class Command implements InterfaceCommand{
   }
 
   async #global( parsed ){
-    if( Object.keys( this.#global_flag ).includes( parsed.keys[ 0 ] ) )
-    {
-      for( const global of Object.keys( this.#global_flag ) ){
-
-        if ( this.#global_flag[ global ]?.cb ) {
-          if ( await async_( this.#global_flag[ global ].cb ) )
-            await this.#global_flag[ global ].cb( parsed, ...this.#global_flag[ global ].rest_args )
+    for( const key of parsed.keys ){
+      if( Object.keys( this.#global_flag ).includes( key ) ) {
+        if ( this.#global_flag[ key ]?.cb ) {
+          if ( await async_( this.#global_flag[ key ].cb ) )
+            await this.#global_flag[ key ].cb( parsed, ...this.#global_flag[ key ].rest_args )
           else
-            this.#global_flag[ global ].cb( parsed, ...this.#global_flag[ global ].rest_args )
+            this.#global_flag[ key ].cb( parsed, ...this.#global_flag[ key ].rest_args )
 
         }
-        parsed.keys.splice( parsed.keys.indexOf( global ), 1 )
-        delete parsed.object[ global ]
-      }}
+        parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
+        delete parsed.object[ key ]
+      }
+    }
+
   }
 
   async #help(){
