@@ -27,7 +27,7 @@ export default async ( id ) => {
     }
 
     tttt.end( id, success, UNITName, message )
-  }, [ { data:'to_sanitise', } ] )
+  }, false, [ { data:'to_sanitise', } ] )
 
   await command.flag( '--bare', { short:'--bare', type:'opts' } )
   await command.intercept( {
@@ -35,6 +35,43 @@ export default async ( id ) => {
     keys: [
       'init',
       '--bare'
+    ],
+
+  } )
+
+}
+
+export async function global_command_flag( id ) {
+
+  const UNITName = '@cli-dang/input.command.define global command flag'
+
+  const command =  new Command()
+
+  command.define( '--init', <cb>( data ) => {
+
+    let success = true
+    let message: undefined | string
+    let result:Error|undefined = undefined
+
+    try {
+      assert.deepStrictEqual( data.object[ '--init' ], 'hello' )
+    } catch ( error ) {
+      result = error
+    }
+
+    if ( result instanceof Error ) {
+      tttt.failed( UNITName )
+      success = false
+      message = result.message
+    }
+
+    tttt.end( id, success, UNITName, message )
+  }, true )
+
+  await command.intercept( {
+    object: { '--init': 'hello'  },
+    keys: [
+      '--init'
     ],
 
   } )

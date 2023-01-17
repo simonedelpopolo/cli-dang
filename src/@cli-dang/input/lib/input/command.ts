@@ -10,11 +10,14 @@ export class Command implements InterfaceCommand{
 
   #_target: { command: string, flag: string }
 
+  #_global: boolean
+
   readonly #_commands : CommandsDefinition
 
   constructor() {
     this.#_name = undefined
     this.#_commands = {}
+    this.#_global = false
   }
 
   public async checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition > {
@@ -30,6 +33,7 @@ export class Command implements InterfaceCommand{
 
   public async intercept( parsed:ParsedArgv ):Promise<void> {
     let executed: null | string = null
+    let global: string
 
     if( parsed?.help ) {
 
@@ -45,11 +49,14 @@ export class Command implements InterfaceCommand{
       if (  this.#_commands?.[ key ] ) {
 
         executed = key
-        if ( parsed.object?.[ key ] )
+        if ( parsed.object?.[ key ] && !this.#_global )
           await exit( `♠ command ${ Dang.red( key ) } doesn't accept any argument`, undefined, error_code.COMMAND )
 
         parsed.keys.splice( parsed.keys.indexOf( key ), 1 )
         parsed.command = key
+
+        if( this.#_global )
+          global = parsed.object[ key ]
 
         delete parsed.object[ key ]
 
@@ -87,6 +94,9 @@ export class Command implements InterfaceCommand{
 
     }
 
+    if( this.#_global )
+      parsed.object[ executed ] = global
+
     if( this.#_commands[ executed ]?.cb ) {
       if ( await async_( this.#_commands[ executed ].cb ) )
         await this.#_commands[ executed ].cb( parsed, ...( this.#_commands[ executed ].rest_args ) )
@@ -97,8 +107,10 @@ export class Command implements InterfaceCommand{
 
   }
 
-  public define( name: string, cb: CommandCallBack, rest_args: RestArgsCallbacks = [] ) {
+  public define( name: string, cb: CommandCallBack, global = false, rest_args: RestArgsCallbacks = [] ) {
     this.#_name = name
+    if( global )
+      this.#_global = true
     if ( !this.#_commands[ this.#_name ] )
       this.#_commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
   }

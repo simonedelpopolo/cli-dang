@@ -46,7 +46,7 @@ declare global {
   interface InterfaceCommand {
     checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition | boolean>;
     intercept( parsed:ParsedArgv ):Promise<void>;
-    define: ( name: string, cb: CommandCallBack, rest_args?:RestArgsCallbacks ) => void;
+    define: ( name: string, cb: CommandCallBack, global?:boolean, rest_args?:RestArgsCallbacks ) => void;
     flag: ( name: string|string[], descriptor: FlagDescriptor ) => void;
   }
 }
@@ -54,6 +54,6 @@ declare global {
 export class Command implements InterfaceCommand {
   checkout( name?: string | undefined ): Promise<checkoutCommand | CommandsDefinition | boolean>;
   intercept( parsed:ParsedArgv ):Promise<void>;
-  define: ( name: string, cb: CommandCallBack, rest_args?:RestArgsCallbacks ) => void;
+  define: ( name: string, cb: CommandCallBack, global?:boolean, rest_args?:RestArgsCallbacks ) => void;
   flag: ( name: string|string[], descriptor: FlagDescriptor ) => void;
 }
