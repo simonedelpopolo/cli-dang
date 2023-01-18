@@ -21,8 +21,12 @@ export default async function* check_flag<CheckFlag> ( data:CheckFlag, name:stri
     if( data === null )
       if ( ( await oftype_( data ) ) === type ) return data
 
-    if( await oftype_( data ) === type.charAt( 0 ).toUpperCase() + type.slice( 1 ) )
+    if( type === 'opts' )
       return data
+    else{
+      if( await oftype_( data ) === type.charAt( 0 ).toUpperCase() + type.slice( 1 ) )
+        return data
+    }
 
     return new OftypesError( `♠ ${name} doesn't accept any other type than: ${type}` )
 
