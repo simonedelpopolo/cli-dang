@@ -164,7 +164,7 @@ export class Command implements InterfaceCommand{
     for( const key of parsed.keys ){
       const parsed_global = await processor( [ 'global', key ] )
       let parameter = undefined
-      if( parsed_global.keys[ 1 ].match( '=' ) )
+      if( key.match( '=' ) )
         parameter = key.replace( parsed_global.keys[ 1 ], '' ).replace( '=', '' )
 
 
