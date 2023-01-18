@@ -12,6 +12,7 @@ declare global {
   type LogicParameter = ( data: ParsedArgv ) => Promise<void>
   
   type FlagType = 'string' | 'boolean' | 'number' | 'opts' | 'json' | 'buf' | 'null'
+  type GlobalFlagType = 'string' | 'opts' | 'object'
   type FlagDescriptor ={
     long?: string | null
     short: string | null
@@ -40,7 +41,8 @@ declare global {
   type GlobalFlag = {
       [ name: string ]: {
         cb: CommandCallBack,
-        rest_args?: RestArgsCallbacks
+        rest_args?: RestArgsCallbacks,
+        type: GlobalFlagType
       }
   }
   type checkoutCommand = {
@@ -49,10 +51,10 @@ declare global {
     }
   }
   
-  
   type checkoutGlobal = {
     cb: CommandCallBack,
-    rest_args?: RestArgsCallbacks
+    rest_args?: RestArgsCallbacks,
+    type: GlobalFlagType
   }
   
   
@@ -60,7 +62,7 @@ declare global {
     checkout( name?: string | undefined ): checkoutCommand | CommandsDefinition;
     checkout_global( name?: string | undefined ): checkoutGlobal | GlobalFlag;
     intercept( parsed:ParsedArgv ):Promise<void>;
-    define: ( name: string, cb: CommandCallBack, global?:boolean, rest_args?:RestArgsCallbacks ) => void;
+    define: ( name: string, cb: CommandCallBack, global?:boolean, global_type?:GlobalFlagType, rest_args?:RestArgsCallbacks ) => void;
     flag: ( name: string|string[], descriptor: FlagDescriptor ) => Promise<void>;
   }
 }
@@ -69,6 +71,6 @@ export class Command implements InterfaceCommand {
   checkout( name?: string | undefined ): checkoutCommand | CommandsDefinition;
   checkout_global( name?: string | undefined ): checkoutGlobal | GlobalFlag;
   intercept( parsed:ParsedArgv ): Promise<void>;
-  define: ( name: string, cb: CommandCallBack, global?:boolean, rest_args?:RestArgsCallbacks ) => void;
+  define: ( name: string, cb: CommandCallBack, global?:boolean, global_type?:GlobalFlagType, rest_args?:RestArgsCallbacks ) => void;
   flag: ( name: string|string[], descriptor: FlagDescriptor ) => Promise<void>;
 }
