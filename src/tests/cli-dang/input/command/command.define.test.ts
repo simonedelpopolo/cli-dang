@@ -27,7 +27,7 @@ export default async ( id ) => {
     }
 
     tttt.end( id, success, UNITName, message )
-  }, false, [ { data:'to_sanitise', } ] )
+  }, false, undefined, [ { data:'to_sanitise', } ] )
 
   await command.flag( '--bare', { short:'--bare', type:'opts' } )
   await command.intercept( {
@@ -44,6 +44,7 @@ export default async ( id ) => {
 export async function global_command_flag( id ) {
 
   const UNITName = '@cli-dang/input.command.define global command flag'
+
 
   const command =  new Command()
 
@@ -66,7 +67,7 @@ export async function global_command_flag( id ) {
     }
 
     tttt.end( id, success, UNITName, message )
-  }, true )
+  }, true, 'string' )
 
   command.define( 'command', () => {/*empty*/} )
 
