@@ -116,12 +116,13 @@ export class Command implements InterfaceCommand{
 
   }
 
-  public define( name: string, cb: CommandCallBack, global = false, rest_args: RestArgsCallbacks = [] ):void {
+  public define( name: string, cb: CommandCallBack, global = false, global_type:GlobalFlagType = 'string', rest_args: RestArgsCallbacks = [] ):void {
     this.#_name = name
     if( global ){
       this.#_global_flag[ name ] = {
         [ 'cb' ]: cb,
         rest_args: rest_args,
+        type: global_type
       }
     }
 
@@ -161,21 +162,31 @@ export class Command implements InterfaceCommand{
   }
 
   async #global( parsed ):Promise<void>{
+
     for( const key of parsed.keys ){
-      const parsed_global = await processor( [ 'global', key ] )
-      let parameter = undefined
+
+      const parsed_global:ParsedArgv = await processor( [ 'global', key ] )
+      let parameter = parsed
+
       if( key.match( '=' ) )
         parameter = key.replace( parsed_global.keys[ 1 ], '' ).replace( '=', '' )
-
 
       if ( Object.keys( this.#_global_flag ).includes( parsed_global.keys[ 1 ] ) ) {
 
         if ( this.#_global_flag[ parsed_global.keys[ 1 ] ]?.cb ) {
 
+          const data = this.#_global_flag[ parsed_global.keys[ 1 ] ].type === 'opts'
+            ? parsed_global
+            : this.#_global_flag[ parsed_global.keys[ 1 ] ].type === 'string'
+              ? parameter
+              : parsed
+
           if ( await async_( this.#_global_flag[ parsed_global.keys[ 1 ] ].cb ) )
-            await this.#_global_flag[ parsed_global.keys[ 1 ] ].cb( parameter, ...this.#_global_flag[ parsed_global.keys[ 1 ] ].rest_args )
+
+            await this.#_global_flag[ parsed_global.keys[ 1 ] ].cb( data, ...this.#_global_flag[ parsed_global.keys[ 1 ] ].rest_args )
+
           else
-            this.#_global_flag[ parsed_global.keys[ 1 ] ].cb( parameter, ...this.#_global_flag[ parsed_global.keys[ 1 ] ].rest_args )
+            this.#_global_flag[ parsed_global.keys[ 1 ] ].cb( data, ...this.#_global_flag[ parsed_global.keys[ 1 ] ].rest_args )
 
         }
 
