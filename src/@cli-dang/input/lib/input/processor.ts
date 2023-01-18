@@ -27,7 +27,7 @@ export async function processor( argv:string[] ):Promise<ParsedArgv|OftypesError
 
       if( index !== '0' ) {
 
-        if( argv[ index ].match(  /=[^ ]*\s*\S*$/g ) === null )
+        if( argv[ index ].match(  /=[^]*\s*\S*$/g ) === null )
           argv[ index ] = `${argv[ index ]}=undefined`
 
         const match_pattern =  argv[ index ].matchAll( /(.*?)=(.*?$)/g )
