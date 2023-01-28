@@ -88,7 +88,7 @@ export class Command implements InterfaceCommand{
                   if ( type_check instanceof Error )
                     await exit( type_check.message, undefined, error_code.FLAG )
                   parsed.object[ flag ] = type_check  as never
-                  parsed.flag = { [ flag ]: type_check } as object | string
+                  parsed.flag [ flag ] = type_check as object | string
                 }
               }
               parsed.keys.splice( parsed.keys.indexOf( flag ), 1 )
