@@ -21,6 +21,7 @@ export default async function* check_flag<CheckFlag> ( data:CheckFlag, name:stri
     if( data === null )
       if ( ( await oftype_( data ) ) === type ) return data
 
+    // @todo parse any opts value to set properly its type string|number|boolean. keep it simple!
     if( type === 'opts' )
       return data
     else{
