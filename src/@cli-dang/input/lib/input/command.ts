@@ -46,13 +46,11 @@ export class Command implements InterfaceCommand{
   public async intercept( parsed:ParsedArgv ):Promise<void> {
     let executed: null | string = null
 
-    if( parsed.object?.help ) {
-
+    if ( Object.keys( parsed.object ).includes( 'help' ) ) {
       this.#_target = parsed.object
       await this.#help()
 
       return
-
     }
 
     if( Object.keys( this.#_global_flag ).length > 0 )
@@ -205,15 +203,15 @@ export class Command implements InterfaceCommand{
    */
   #help():void{
 
-    if( this.#_target?.[ '--view' ] ) {
-      if ( this.#_target[ '--view' ].constructor.name === 'String' && this.#_commands?.[  this.#_target[ '--view' ] ] )
+    if( this.#_target[ '--view' ] ) {
+      if ( this.#_target[ '--view' ].constructor.name === 'String' && this.#_commands[  this.#_target[ '--view' ] ] )
         process.stdout.write( `${ this.#_commands[  this.#_target[ '--view' ] ] }\n` )
       else if(
         this.#_target[ '--view' ].constructor.name === 'Object' &&
-        this.#_commands?.[  Object.keys( this.#_target?.[ '--view' ] )[ 0 ] ] &&
-        this.#_commands?.[  Object.keys( this.#_target?.[ '--view' ] )[ 0 ] ].flags?.[ this.#_target[ '--view' ] ]
+        this.#_commands[  Object.keys( this.#_target[ '--view' ] )[ 0 ] ] &&
+        this.#_commands[  Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ] ]
       ) {
-        process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags?.[ this.#_target[ '--view' ] ].description }\n` )
+        process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ] ].description }\n` )
         process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ] ].usage }\n` )
       }
       else
