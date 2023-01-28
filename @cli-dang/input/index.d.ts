@@ -7,7 +7,7 @@ declare global {
     [p:string]:string
   }
   type InterceptHelp = { command: string, flag: string }
-  type ParsedArgv = { [ p: string ]: unknown, keys: string[], flag?: object|string, command?:string} & { help?: InterceptHelp }
+  type ParsedArgv = { object: { [ p: string ]: string & object }, keys: string[], flag?: object|string, command?:string}
   type RestArgsCallbacks = Array<boolean | string | object | number>
   type LogicParameter = ( data: ParsedArgv ) => Promise<void>
   

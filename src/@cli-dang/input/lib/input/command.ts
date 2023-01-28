@@ -9,7 +9,7 @@ export class Command implements InterfaceCommand{
 
   #_name: string | undefined
 
-  #_target: { command: string, flag: string }
+  #_target: { [command:string]: string|object } | string
 
   readonly #_global_flag : GlobalFlag
 
@@ -46,9 +46,9 @@ export class Command implements InterfaceCommand{
   public async intercept( parsed:ParsedArgv ):Promise<void> {
     let executed: null | string = null
 
-    if( parsed?.help ) {
+    if( parsed.object?.help ) {
 
-      this.#_target = parsed.help
+      this.#_target = parsed.object
       await this.#help()
 
       return
@@ -88,7 +88,7 @@ export class Command implements InterfaceCommand{
                 ) ) {
                   if ( type_check instanceof Error )
                     await exit( type_check.message, undefined, error_code.FLAG )
-                  parsed.object[ flag ] = type_check
+                  parsed.object[ flag ] = type_check  as never
                   parsed.flag = { [ flag ]: type_check } as object | string
                 }
               }
