@@ -89,7 +89,7 @@ export class Command implements InterfaceCommand{
                   if ( type_check instanceof Error )
                     await exit( type_check.message, undefined, error_code.FLAG )
                   parsed.object[ flag ] = type_check
-                  parsed.flag = { [ 'flag' ]: type_check } as object | string
+                  parsed.flag = { [ flag ]: type_check } as object | string
                 }
               }
               parsed.keys.splice( parsed.keys.indexOf( flag ), 1 )
@@ -98,9 +98,7 @@ export class Command implements InterfaceCommand{
               await exit( `♠ flag ${ Dang.red( flag ) } not found`, undefined, error_code.FLAG )
 
           }
-
         }
-
       } else
         await exit( `♠ command ${ Dang.red( key ) } not found`, undefined, error_code.COMMAND )
 
@@ -111,7 +109,6 @@ export class Command implements InterfaceCommand{
         await this.#_commands[ executed ].cb( parsed, ...( this.#_commands[ executed ].rest_args ) )
       else
         this.#_commands[ executed ].cb( parsed, ...( this.#_commands[ executed ].rest_args ) )
-
     }
 
   }
@@ -194,11 +191,38 @@ export class Command implements InterfaceCommand{
         delete parsed.object[ key ]
       }
     }
-
   }
 
+  /**
+   * @example `exec help --view=command:--flag|-f` to retrieve the manual entry of the flag related to the selected command
+   * @example `exec help --view=command` to retrieve the manual entry related to the selected command
+   * @example `exec help --view=--global-flag` to retrieve the manual entry related to the selected global flag
+   *
+   * @todo add description and usage properties to commands and global-flags objects.
+   * now only the command flag is retrievable!!
+   *
+   * @private
+   */
   #help():void{
-    const help_message = `${this.#_commands[ this.#_target.command ].flags[ this.#_target.flag ].description} ${this.#_commands[ this.#_target.command ].flags[ this.#_target.flag ].usage}`
-    process.stdout.write( help_message )
+
+    if( this.#_target?.[ '--view' ] ) {
+      if ( this.#_target[ '--view' ].constructor.name === 'String' && this.#_commands?.[  this.#_target[ '--view' ] ] )
+        process.stdout.write( `${ this.#_commands[  this.#_target[ '--view' ] ] }\n` )
+      else if(
+        this.#_target[ '--view' ].constructor.name === 'Object' &&
+        this.#_commands?.[  Object.keys( this.#_target?.[ '--view' ] )[ 0 ] ] &&
+        this.#_commands?.[  Object.keys( this.#_target?.[ '--view' ] )[ 0 ] ].flags?.[ this.#_target[ '--view' ] ]
+      ) {
+        process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags?.[ this.#_target[ '--view' ] ].description }\n` )
+        process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ] ].usage }\n` )
+      }
+      else
+        process.stderr.write( `♠ command|flag|glob a-flag not found given --view: ${  this.#_target[ '--view' ].toString() }\n` )
+    }
+    else {
+      process.stderr.write( '`exec help --view=command:--flag` to retrieve the manual page entry of the flag related to selected command\n' )
+      process.stderr.write( '`exec help --view=command` to retrieve the manual page entry related to the selected command\n' )
+      process.stderr.write( '`exec help --view=--global-flag` to retrieve the manual page entry related to the selected global flag\n' )
+    }
   }
 }
