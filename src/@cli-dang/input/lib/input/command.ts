@@ -3,6 +3,7 @@ import { array_, async_, resolvers } from 'oftypes'
 import { Dang } from '@cli-dang/decors'
 import { error_code } from '@cli-dang/error'
 import { exit } from '@cli-dang/activity'
+import { inspect } from 'node:util'
 import { processor } from '@cli-dang/input'
 
 export class Command implements InterfaceCommand{
@@ -208,14 +209,14 @@ export class Command implements InterfaceCommand{
         process.stdout.write( `${ this.#_commands[  this.#_target[ '--view' ] ] }\n` )
       else if(
         this.#_target[ '--view' ].constructor.name === 'Object' &&
-        this.#_commands[  Object.keys( this.#_target[ '--view' ] )[ 0 ] ] &&
-        this.#_commands[  Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ] ]
+        this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ] &&
+        this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ][ Object.keys( this.#_target[ '--view' ] )[ 0 ] ] ]
       ) {
-        process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ] ].description }\n` )
-        process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ] ].usage }\n` )
+        process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ][ Object.keys( this.#_target[ '--view' ] )[ 0 ] ] ].description }\n` )
+        process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ][ Object.keys( this.#_target[ '--view' ] )[ 0 ] ] ].usage }\n` )
       }
       else
-        process.stderr.write( `♠ command|flag|glob a-flag not found given --view: ${  this.#_target[ '--view' ].toString() }\n` )
+        process.stderr.write( `♠ command|flag|glob a-flag not found given --view: ${ inspect( this.#_target[ '--view' ] ) }\n` )
     }
     else {
       process.stderr.write( '`exec help --view=command:--flag` to retrieve the manual page entry of the flag related to selected command\n' )
