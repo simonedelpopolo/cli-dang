@@ -62,6 +62,7 @@ export class Command implements InterfaceCommand{
       if (  this.#_commands?.[ key ] ) {
 
         executed = key
+        parsed.flag = {}
 
         if ( parsed.object?.[ key ] )
           await exit( `♠ command ${ Dang.red( key ) } doesn't accept any argument`, undefined, error_code.COMMAND )
@@ -75,7 +76,6 @@ export class Command implements InterfaceCommand{
           if ( this.#_commands[ key ]?.flags ) {
             /* - if a flag is present */
             if ( this.#_commands[ key ].flags?.[ flag ] ) {
-              parsed.flag = {}
               if ( this.#_commands[ key ].flags[ flag ].check ) {
 
                 for await ( const type_check of check_flag(
