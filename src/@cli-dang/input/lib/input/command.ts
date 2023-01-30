@@ -82,14 +82,23 @@ export class Command implements InterfaceCommand{
                   parsed.object[ flag ],
                   flag,
                   this.#_commands[ key ].flags[ flag ].void,
-                  this.#_commands[ key ].flags[ flag ].type,
-                  this.#_commands[ key ].flags[ flag ].cb,
-                  this.#_commands[ key ].flags[ flag ].rest_args
+                  this.#_commands[ key ].flags[ flag ].type
                 ) ) {
                   if ( type_check instanceof Error )
                     await exit( type_check.message, undefined, error_code.FLAG )
+
                   parsed.object[ flag ] = type_check  as object | string
                   parsed.flag [ flag ] = type_check as object | string
+
+                  const flag_cb = this.#_commands[ key ].flags[ flag ].cb
+                  const rest_args_cb = this.#_commands[ key ].flags[ flag ].rest_args
+
+                  if( flag_cb !== null ) {
+
+                    await async_( flag_cb )
+                      ? await flag_cb( type_check, ...( rest_args_cb ) )
+                      : flag_cb( type_check, ...( rest_args_cb ) )
+                  }
                 }
               }
               parsed.keys.splice( parsed.keys.indexOf( flag ), 1 )
