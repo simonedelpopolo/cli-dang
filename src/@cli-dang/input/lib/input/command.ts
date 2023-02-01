@@ -129,21 +129,25 @@ export class Command implements InterfaceCommand{
 
     const flag_cb_priority_execution:Array<executor> = []
 
-    for ( const priority_group of Object.keys( flag_cb_executor ) ) {
+    for ( const flag_execution of Object.keys( flag_cb_executor.priority_group[ '0' ] ) )
+      flag_cb_priority_execution.push( flag_cb_executor.priority_group[ '0' ][ flag_execution ] )
 
-      for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '0' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '0' ][ flag_execution ] )
 
-      if( Object.keys( flag_cb_executor[ priority_group ][ '1' ] ).length > 0 )
-        for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '1' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '1' ][ flag_execution ] )
-
-      if( Object.keys( flag_cb_executor[ priority_group ][ '-1' ] ).length > 0 )
-        for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '-1' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '-1' ][ flag_execution ] )
+    if ( Object.keys( flag_cb_executor.priority_group[ '1' ] ).length > 0 ) {
+      for ( const flag_execution of Object.keys( flag_cb_executor.priority_group[ '1' ] ) )
+        flag_cb_priority_execution.push( flag_cb_executor.priority_group[ '1' ][ flag_execution ] )
     }
-    for ( const flag_object of flag_cb_priority_execution ) {
-      for ( const key of Object.keys( flag_object ) ) {
-        if ( flag_object.flag_cb !== null )
-          ( await async_( flag_object.flag_cb ) ) ? await flag_object.flag_cb( flag_object.arg, ...flag_object.rest_args_cb ) : flag_object.flag_cb( flag_object.arg, ...flag_object.rest_args_cb )
 
+    if ( Object.keys( flag_cb_executor.priority_group[ '-1' ] ).length > 0 ) {
+      for ( const flag_execution of Object.keys( flag_cb_executor.priority_group[ '-1' ] ) )
+        flag_cb_priority_execution.push( flag_cb_executor.priority_group[ '-1' ][ flag_execution ] )
+    }
+
+    for ( const flag_object of flag_cb_priority_execution ) {
+      if ( flag_object.flag_cb !== null ) {
+        ( await async_( flag_object.flag_cb ) )
+          ? await flag_object.flag_cb( flag_object.arg, ...flag_object.rest_args_cb )
+          : flag_object.flag_cb( flag_object.arg, ...flag_object.rest_args_cb )
       }
     }
 
