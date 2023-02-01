@@ -44,7 +44,13 @@ export class Command implements InterfaceCommand{
   public async intercept( parsed:ParsedArgv ):Promise<void> {
     let executed: null | string = null
 
-    const flag_cb_executor: executor_flag_cb = { priority_group:{ '0':null, '1':null, '-1':null } }
+    const flag_cb_executor: executor_flag_cb = {
+      priority_group:{
+        '0': {},
+        '1': {},
+        '-1': {}
+      }
+    }
 
     if ( Object.keys( parsed.object ).includes( 'help' ) ) {
       this.#_target = parsed.object
@@ -89,25 +95,21 @@ export class Command implements InterfaceCommand{
                   parsed.object[ flag ] = type_check  as object | string
                   parsed.flag [ flag ] = type_check as object | string
 
-                  const executor:executor =  {
-                    flag_cb: this.#_commands[ key ].flags[ flag ].cb as FlagsCallBack,
-                    arg: type_check  as object | string,
-                    rest_args_cb:this.#_commands[ key ].flags[ flag ].rest_args as RestArgsCallbacks,
+                  const executor:executor = {
+                    flag_cb: this.#_commands[ key ].flags[ flag ]?.cb || null,
+                    arg: type_check as string | object,
+                    rest_args_cb: this.#_commands[ key ].flags[ flag ]?.rest_args || null
                   }
 
                   switch ( this.#_commands[ key ].flags[ flag ].priority ) {
-
                     case 0:
                       flag_cb_executor.priority_group[ '0' ][ flag ] = executor
-
                       break
                     case 1:
                       flag_cb_executor.priority_group[ '1' ][ flag ] = executor
-
                       break
                     case -1:
                       flag_cb_executor.priority_group[ '-1' ][ flag ] = executor
-
                       break
                     default:
                       await exit( 'something wrong with priority in the flag' + this.#_commands[ key ].flags[ flag ] )
@@ -126,26 +128,19 @@ export class Command implements InterfaceCommand{
     }
 
     const flag_cb_priority_execution:Array<executor> = []
-    for ( const [ priority_group ] of Object.entries( flag_cb_executor ) ){
-
-      for ( const flag_execution of Object.keys( priority_group[ '0' ] ) )
-        flag_cb_priority_execution.push( priority_group[ '0' ][ flag_execution ] )
-      for ( const flag_execution of Object.keys( priority_group[ '1' ] ) )
-        flag_cb_priority_execution.push( priority_group[ '1' ][ flag_execution ] )
-      for ( const flag_execution of Object.keys( priority_group[ '-1' ] ) )
-        flag_cb_priority_execution.push( priority_group[ '-1' ][ flag_execution ] )
-
+    for ( const priority_group of Object.keys( flag_cb_executor ) ) {
+      console.trace( priority_group )
+      for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '0' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '0' ][ flag_execution ] )
+      if( Object.keys( flag_cb_executor[ priority_group ][ '1' ] ).length > 0 )
+        for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '1' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '1' ][ flag_execution ] )
+      if( Object.keys( flag_cb_executor[ priority_group ][ '-1' ] ).length > 0 )
+        for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '-1' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '-1' ][ flag_execution ] )
     }
+    for ( const flag_object of flag_cb_priority_execution ) {
+      for ( const key of Object.keys( flag_object ) ) {
+        if ( flag_object.flag_cb !== null )
+          ( await async_( flag_object.flag_cb ) ) ? await flag_object.flag_cb( flag_object.arg, ...flag_object.rest_args_cb ) : flag_object.flag_cb( flag_object.arg, ...flag_object.rest_args_cb )
 
-    for( const flag_object of flag_cb_priority_execution ){
-
-      for( const key of Object.keys( flag_object ) ) {
-        if ( flag_object.flag_cb !== null ) {
-
-          await async_( flag_object.flag_cb )
-            ? await flag_object.flag_cb( flag_object. arg, ...( flag_object. rest_args_cb ) )
-            : flag_object.flag_cb( flag_object.arg, ...( flag_object. rest_args_cb ) )
-        }
       }
     }
 
