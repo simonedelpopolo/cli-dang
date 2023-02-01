@@ -9,11 +9,8 @@ import { processor } from '@cli-dang/input'
 export class Command implements InterfaceCommand{
 
   #_name: string | undefined
-
   #_target: { [command:string]: string|object } | string
-
   readonly #_global_flag : GlobalFlag
-
   readonly #_commands : CommandsDefinition
 
   constructor() {
@@ -46,6 +43,8 @@ export class Command implements InterfaceCommand{
 
   public async intercept( parsed:ParsedArgv ):Promise<void> {
     let executed: null | string = null
+
+    const flag_cb_executor: executor_flag_cb = { priority_group:{ '0':null, '1':null, '-1':null } }
 
     if ( Object.keys( parsed.object ).includes( 'help' ) ) {
       this.#_target = parsed.object
@@ -90,14 +89,28 @@ export class Command implements InterfaceCommand{
                   parsed.object[ flag ] = type_check  as object | string
                   parsed.flag [ flag ] = type_check as object | string
 
-                  const flag_cb = this.#_commands[ key ].flags[ flag ].cb
-                  const rest_args_cb = this.#_commands[ key ].flags[ flag ].rest_args
+                  const executor:executor =  {
+                    flag_cb: this.#_commands[ key ].flags[ flag ].cb as FlagsCallBack,
+                    arg: type_check  as object | string,
+                    rest_args_cb:this.#_commands[ key ].flags[ flag ].rest_args as RestArgsCallbacks,
+                  }
 
-                  if( flag_cb !== null ) {
+                  switch ( this.#_commands[ key ].flags[ flag ].priority ) {
 
-                    await async_( flag_cb )
-                      ? await flag_cb( type_check, ...( rest_args_cb ) )
-                      : flag_cb( type_check, ...( rest_args_cb ) )
+                    case 0:
+                      flag_cb_executor.priority_group[ '0' ][ flag ] = executor
+
+                      break
+                    case 1:
+                      flag_cb_executor.priority_group[ '1' ][ flag ] = executor
+
+                      break
+                    case -1:
+                      flag_cb_executor.priority_group[ '-1' ][ flag ] = executor
+
+                      break
+                    default:
+                      await exit( 'something wrong with priority in the flag' + this.#_commands[ key ].flags[ flag ] )
                   }
                 }
               }
@@ -110,7 +123,30 @@ export class Command implements InterfaceCommand{
         }
       } else
         await exit( `♠ command ${ Dang.red( key ) } not found`, undefined, error_code.COMMAND )
+    }
 
+    const flag_cb_priority_execution:Array<executor> = []
+    for ( const [ priority_group ] of Object.entries( flag_cb_executor ) ){
+
+      for ( const flag_execution of Object.keys( priority_group[ '0' ] ) )
+        flag_cb_priority_execution.push( priority_group[ '0' ][ flag_execution ] )
+      for ( const flag_execution of Object.keys( priority_group[ '1' ] ) )
+        flag_cb_priority_execution.push( priority_group[ '1' ][ flag_execution ] )
+      for ( const flag_execution of Object.keys( priority_group[ '-1' ] ) )
+        flag_cb_priority_execution.push( priority_group[ '-1' ][ flag_execution ] )
+
+    }
+
+    for( const flag_object of flag_cb_priority_execution ){
+
+      for( const key of Object.keys( flag_object ) ) {
+        if ( flag_object.flag_cb !== null ) {
+
+          await async_( flag_object.flag_cb )
+            ? await flag_object.flag_cb( flag_object. arg, ...( flag_object. rest_args_cb ) )
+            : flag_object.flag_cb( flag_object.arg, ...( flag_object. rest_args_cb ) )
+        }
+      }
     }
 
     if( this.#_commands[ executed ]?.cb ) {
@@ -122,19 +158,28 @@ export class Command implements InterfaceCommand{
 
   }
 
-  public define( name: string, cb: CommandCallBack, global = false, global_type:GlobalFlagType = 'string', rest_args: RestArgsCallbacks = [] ):void {
+  public define( name: string, cb: CommandCallBack, info:{description:string, usage:string}={ description:'no description', usage:'no usage' }, global = false, global_type:GlobalFlagType = 'string', rest_args: RestArgsCallbacks = [] ):void {
     this.#_name = name
     if( global ){
       this.#_global_flag[ name ] = {
         [ 'cb' ]: cb,
         rest_args: rest_args,
-        type: global_type
+        type: global_type,
+        description: info.description,
+        usage: info.usage
       }
     }
 
     else {
-      if ( !this.#_commands[ this.#_name ] )
-        this.#_commands[ name ] = { [ 'flags' ]: {}, [ 'cb' ]: cb, rest_args: rest_args }
+      if ( !this.#_commands[ this.#_name ] ) {
+        this.#_commands[ name ] = {
+          [ 'flags' ]: {},
+          [ 'cb' ]: cb,
+          rest_args: rest_args,
+          description: info.description,
+          usage: info.usage
+        }
+      }
     }
   }
 
@@ -142,6 +187,7 @@ export class Command implements InterfaceCommand{
 
     const populate = ( data ) => {
       this.#_commands[ this.#_name ].flags[ data ] = {
+        priority: descriptor.priority || 0,
         long: descriptor.long || null,
         short: descriptor.short || null,
         description: descriptor.description || null,
@@ -207,16 +253,19 @@ export class Command implements InterfaceCommand{
    * @example `exec help --view=command` to retrieve the manual entry related to the selected command
    * @example `exec help --view=--global-flag` to retrieve the manual entry related to the selected global flag
    *
-   * @todo add description and usage properties to commands and global-flags objects.
-   * now only the command flag is retrievable!!
-   *
    * @private
    */
   #help():void{
 
     if( this.#_target[ '--view' ] ) {
-      if ( this.#_target[ '--view' ].constructor.name === 'String' && this.#_commands[  this.#_target[ '--view' ] ] )
-        process.stdout.write( `${ this.#_commands[  this.#_target[ '--view' ] ] }\n` )
+      if ( this.#_target[ '--view' ].constructor.name === 'String' && this.#_commands[  this.#_target[ '--view' ] ] ) {
+        process.stdout.write( `${ this.#_commands[ this.#_target[ '--view' ] ].description }\n` )
+        process.stdout.write( `${ this.#_commands[ this.#_target[ '--view' ] ].usage }\n` )
+      }
+      else if ( this.#_target[ '--view' ].constructor.name === 'String' && this.#_global_flag[  this.#_target[ '--view' ] ] ) {
+        process.stdout.write( `${ this.#_global_flag[ this.#_target[ '--view' ] ].description }\n` )
+        process.stdout.write( `${ this.#_global_flag[ this.#_target[ '--view' ] ].usage }\n` )
+      }
       else if(
         this.#_target[ '--view' ].constructor.name === 'Object' &&
         this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ] &&
@@ -226,7 +275,7 @@ export class Command implements InterfaceCommand{
         process.stdout.write( `${ this.#_commands[ Object.keys( this.#_target[ '--view' ] )[ 0 ] ].flags[ this.#_target[ '--view' ][ Object.keys( this.#_target[ '--view' ] )[ 0 ] ] ].usage }\n` )
       }
       else
-        process.stderr.write( `♠ command|flag|glob a-flag not found given --view: ${ inspect( this.#_target[ '--view' ] ) }\n` )
+        process.stderr.write( `♠ command|flag|global-flag not found given --view: ${ inspect( this.#_target[ '--view' ] ) }\n` )
     }
     else {
       process.stderr.write( '`exec help --view=command:--flag` to retrieve the manual page entry of the flag related to selected command\n' )
