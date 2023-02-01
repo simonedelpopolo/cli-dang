@@ -128,11 +128,14 @@ export class Command implements InterfaceCommand{
     }
 
     const flag_cb_priority_execution:Array<executor> = []
+
     for ( const priority_group of Object.keys( flag_cb_executor ) ) {
-      console.trace( priority_group )
+
       for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '0' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '0' ][ flag_execution ] )
+
       if( Object.keys( flag_cb_executor[ priority_group ][ '1' ] ).length > 0 )
         for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '1' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '1' ][ flag_execution ] )
+
       if( Object.keys( flag_cb_executor[ priority_group ][ '-1' ] ).length > 0 )
         for ( const flag_execution of Object.keys( flag_cb_executor[ priority_group ][ '-1' ] ) ) flag_cb_priority_execution.push( flag_cb_executor[ priority_group ][ '-1' ][ flag_execution ] )
     }
