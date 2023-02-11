@@ -18,8 +18,23 @@ export default async function* check_flag<CheckFlag> ( data:CheckFlag, name:stri
     if( await number_( data ) )
       data = <type> Number( data )
 
-    if( data === null )
-      if ( ( await oftype_( data ) ) === type ) return data
+    /**
+     * - void flag or any other given type.
+     *
+     * @example
+     *
+     * const app = new Command()
+     *
+     * // add a command to the process, and one flag
+     * app.define('command')
+     * await app.flag('--flag', {short:'--flag', type:'null', check: true, void: false})
+     *
+     * // execute the command from shell
+     * 'process command --flag'
+     * 'process command --flag=3000'
+     */
+    if( type === 'null' || data === null )
+      return data
 
     // @todo parse any opts value to set properly its type string|number|boolean. keep it simple!
     if( type === 'opts' )
