@@ -84,7 +84,7 @@ export class Command implements InterfaceCommand{
 
               if( this.#_commands[ key ].flags[ flag ].conflict !== null ){
                 for( const resolve of this.#_commands[ key ].flags[ flag ].conflict ){
-                  if( parsed.keys.includes( resolve ) )
+                  if( Object.keys( parsed.object ).includes( resolve ) )
                     await exit( `${this.#_commands[ key ].flags[ flag ]} has conflict with ${resolve}`, undefined, error_code.FLAG )
                 }
               }
