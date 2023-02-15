@@ -81,6 +81,14 @@ export class Command implements InterfaceCommand{
           if ( this.#_commands[ key ]?.flags ) {
             /* - if a flag is present */
             if ( this.#_commands[ key ].flags?.[ flag ] ) {
+
+              if( this.#_commands[ key ].flags[ flag ].conflict !== null ){
+                for( const resolve of this.#_commands[ key ].flags[ flag ].conflict ){
+                  if( parsed.keys.includes( resolve ) )
+                    await exit( `${this.#_commands[ key ].flags[ flag ]} has conflict with ${resolve}`, undefined, error_code.FLAG )
+                }
+              }
+
               if ( this.#_commands[ key ].flags[ flag ].check ) {
 
                 for await ( const type_check of check_flag(
@@ -189,9 +197,10 @@ export class Command implements InterfaceCommand{
 
     const populate = ( data ) => {
       this.#_commands[ this.#_name ].flags[ data ] = {
+        short: descriptor.short,
         priority: descriptor.priority || 0,
         long: descriptor.long || null,
-        short: descriptor.short || null,
+        conflict: descriptor.conflict || null,
         description: descriptor.description || null,
         usage: descriptor.usage || null,
         void: descriptor.void || false,

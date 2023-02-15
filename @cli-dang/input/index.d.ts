@@ -14,9 +14,10 @@ declare global {
   type FlagType = 'string' | 'boolean' | 'number' | 'opts' | 'json' | 'buf' | 'null'
   type GlobalFlagType = 'string' | 'opts' | 'object'
   type FlagDescriptor ={
+    short: string
     priority?: number
     long?: string | null
-    short: string | null
+    conflict?: string[] | null
     description?: string | null
     usage?: string | null
     void?: boolean | null
