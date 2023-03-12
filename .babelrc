@@ -5,6 +5,7 @@
   "ignore": [
     "src/@cli-dang/activity/index.d.ts",
     "src/@cli-dang/boolean/index.d.ts",
+    "src/@cli-dang/chmodx/index.d.ts",
     "src/@cli-dang/decors/index.d.ts",
     "src/@cli-dang/dissection/index.d.ts",
     "src/@cli-dang/error/index.d.ts",

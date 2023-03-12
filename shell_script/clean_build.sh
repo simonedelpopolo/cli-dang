@@ -1,5 +1,6 @@
 # clean build
 rm -rf ./@cli-dang/activity/lib -rf ./@cli-dang/activity/index.js || true
+rm -rf ./@cli-dang/chmodx/lib -rf ./@cli-dang/chmodx/index.js || true
 rm -rf ./@cli-dang/boolean/lib -rf ./@cli-dang/boolean/index.js || true
 rm -rf ./@cli-dang/decors/lib -rf ./@cli-dang/decors/index.js || true
 rm -rf ./@cli-dang/error/lib -rf ./@cli-dang/error/index.js || true
@@ -11,4 +12,3 @@ rm -rf ./types || true
 rm -rf ./coverage || true
 rm -rf ./node_modules || true
 rm -rf ./package-lock.json || true
-

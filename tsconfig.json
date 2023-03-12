@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
+    "module": "ESNext",
     "target": "ESNext",
     "declaration": true,
     "emitDeclarationOnly": true,

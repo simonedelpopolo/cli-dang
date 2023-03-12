@@ -1,25 +1,24 @@
 import { default as Generator } from './functions/generator'
-import { MessageArgument } from './types'
 import { OftypesError } from 'oftypes'
 
 export async function stderr( message:MessageArgument, mute = false ):Promise<Buffer|string|OftypesError>{
 
   const generator = new Generator()
-  const errors:[] = []
+  const errors:boolean[] = []
 
   let string_buffer: unknown
   for await ( const check of generator.type_check( message ) )
     string_buffer = check
 
   if( string_buffer instanceof Error )
-    errors.push( <never> true )
+    errors.push( true )
 
   let boolean: unknown
   for await ( const check of generator.boolean( mute, 'stderr' ) )
     boolean = check
 
   if( boolean instanceof Error )
-    errors.push( <never> true )
+    errors.push( true )
 
   return new Promise( ( resolve, reject ) => {
 

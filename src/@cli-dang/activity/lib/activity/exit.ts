@@ -1,5 +1,4 @@
 import { default as Generator } from './functions/generator'
-import { MessageArgument } from './types'
 import { OftypesError } from 'oftypes'
 import { stderr } from '@cli-dang/activity'
 

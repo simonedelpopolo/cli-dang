@@ -34,10 +34,36 @@ export async function data_trace_inspect ( id ){
   trace_options.depth = 3
   trace_options.showHidden = false
 
-  const result:null|Error = await tttt.deepStrictEqual( async () => {
+  const result:boolean|Error = await tttt.deepStrictEqual( async () => {
 
-    const actual:string = await trace( [ 1, 2, 3, 4 ] )
+    const actual:string|Error = await trace( [ 1, 2, 3, 4 ] )
     const expected = '[ 1, 2, 3, 4 ]'
+
+    return tttt.resolvers( actual, expected )
+  } )
+
+  if( result instanceof Error ){
+    success = false
+    message = result.message
+    tttt.failed ( UNITName )
+  }
+
+  tttt.end( id, success, UNITName, message )
+}
+
+export async function data_trace_complex ( id ){
+
+  let success = true
+  let message:string|undefined = undefined
+  const UNITName = 'trace inspect returns'
+
+  const result:boolean|Error = await tttt.deepStrictEqual( async () => {
+
+    const actual:string|Error = await trace( [ 'data', { ...'string' as {} } ] )
+    const expected = `[
+  'data',
+  { '0': 's', '1': 't', '2': 'r', '3': 'i', '4': 'n', '5': 'g' }
+]`
 
     return tttt.resolvers( actual, expected )
   } )
