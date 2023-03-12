@@ -1,6 +1,6 @@
 {
   "name": "@cli-dang/chmodx",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "Apache-2.0",
   "description": "Command Line Interface design framework. ESModule",
   "type": "module",
@@ -8,6 +8,7 @@
   "types": "./index.d.ts",
   "bin": {"chmodx":  "index.js"},
   "files": [
+    "bin",
     "lib",
     "index.js",
     "index.d.ts"
