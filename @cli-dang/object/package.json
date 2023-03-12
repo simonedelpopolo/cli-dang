@@ -15,7 +15,7 @@
     "node": ">12"
   },
   "dependencies": {
-    "oftypes": "3.0.0"
+    "oftypes": "3.0.4"
   },
   "publishConfig": {
     "access": "public"
