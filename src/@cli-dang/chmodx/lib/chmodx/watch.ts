@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process'
 
 export async function watch(): Promise<void>{
 
-  const path = `${process.cwd()}/${root.values().next()?.value ?? ''}`
+  const path = `${process.cwd()}/${root.values().next()?.value+'/' ?? ''}`
   const packageJSON = await ( await import( `${path}/package.json`, { assert: { type: 'json' } } ) ).default
 
   if( !packageJSON.bin )
@@ -19,13 +19,13 @@ export async function watch(): Promise<void>{
     for( const filename of multi ){
       const watcher = spawn( watcher_exec, { stdio: [  'inherit', 'inherit', 'inherit', 'ipc' ], } )
       watcher.on( 'error', err => console.log( err ) )
-      watcher.send( [ resolve( `${path}/${filename}` ),  filename ] )
+      watcher.send( [ resolve( `${path}${filename}` ),  filename ] )
       process.on( 'message', message => console.log( message ) )
     }
   }
   const watcher = spawn( watcher_exec, { stdio: [  'inherit', 'inherit', 'inherit', 'ipc' ], } )
   watcher.on( 'error', err => console.log( err ) )
-  watcher.send( [ `${path}/${packageJSON.bin[ Object.keys( packageJSON.bin )[ 0 ] ]}`,  Object.keys( packageJSON.bin )[ 0 ] ] )
+  watcher.send( [ `${path}${packageJSON.bin[ Object.keys( packageJSON.bin )[ 0 ] ]}`,  Object.keys( packageJSON.bin )[ 0 ] ] )
   process.on( 'message', message => console.log( message ) )
 
 }
