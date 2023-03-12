@@ -7,8 +7,9 @@ import { spawn } from 'node:child_process'
 
 export async function watch(): Promise<void>{
 
-  const path = `${process.cwd()}/${root.values().next()?.value+'/' ?? ''}`
-  const packageJSON = await ( await import( `${path}/package.json`, { assert: { type: 'json' } } ) ).default
+  const root_path = root.values().next()?.value ?? undefined
+  const path = `${process.cwd()}/${root_path ?  root_path + '/' : ''}`
+  const packageJSON = await ( await import( `${path}package.json`, { assert: { type: 'json' } } ) ).default
 
   if( !packageJSON.bin )
     await exit( `  \n  ♠ this package, '${Dang.magenta( packageJSON.name )}', doesn't seem to have a bin property\n  please insert an entry` )
